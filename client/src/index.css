@@ -1,1 +1,25 @@
 @import "tailwindcss";
+
+/* SmartEAI Theme Variables */
+:root {
+  --primary: #0EA5E9;
+  --primary-dark: #2369EB;
+  --accent: #22D3EE;
+
+  --bg-main: #F8FAFC;
+  --text-primary: #1F2933;
+  --text-secondary: #334155;
+}
+
+/* Custom utility classes */
+.bg-main {
+  background-color: var(--bg-main);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.gradient-primary {
+  background-image: linear-gradient(to right, var(--primary), var(--primary-dark));
+}
