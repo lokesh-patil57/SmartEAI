@@ -9,8 +9,10 @@
   --accent: oklch(0.97 0 0);
 
   --bg-main: #F8FAFC;
-  --text-primary: #1F2933;
-  --text-secondary: #334155;
+  --card-bg: #FFFFFF;
+  --border-soft: #E2E8F0;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -50,6 +52,11 @@
 
 .text-secondary {
   color: var(--text-secondary);
+}
+
+.card-soft {
+  background-color: var(--card-bg);
+  border-color: var(--border-soft);
 }
 
 .gradient-primary {
@@ -145,9 +152,42 @@ header {
   transition: all 0.3s ease;
 }
 
+
+
 /* When scrolling */
 .navbar-scrolled header {
   background-color: rgba(255, 255, 255, 0.9);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
   border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+
+@keyframes dropdown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-dropdown {
+  animation: dropdown 140ms ease-out;
+}
+
+@keyframes toast {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-toast {
+  animation: toast 160ms ease-out;
 }

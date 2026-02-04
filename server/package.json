@@ -1,0 +1,26 @@
+{
+  "name": "smarteai-server",
+  "version": "1.0.0",
+  "description": "SmartEAI backend - AI-powered internship & job application assistant",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "docx": "^9.5.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "mammoth": "^1.11.0",
+    "mongoose": "^8.8.0",
+    "multer": "^2.0.2",
+    "pdf-parse": "^2.4.5",
+    "pdfkit": "^0.15.0"
+  }
+}

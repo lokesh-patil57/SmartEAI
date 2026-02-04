@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import HeroSentence from "@/components/HeroSentence";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -7,12 +8,15 @@ import ProblemSolution from "@/components/ProblemSolution";
 import Timeline from "@/components/Timeline";
 import ExportFormats from "@/components/ExportFormats";
 import FinalCTA from "@/components/FinalCTA";
-
-
-
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
+
+  useEffect(() => {
+    if (isLoggedIn) navigate("/home", { replace: true });
+  }, [isLoggedIn, navigate]);
 
   return (
     <>
@@ -107,7 +111,7 @@ export default function Landing() {
               className="group relative px-8 py-6 text-base md:text-lg font-semibold bg-gradient-to-r from-[#2369EB] to-[#0d47b8] hover:from-[#1557d4] hover:to-[#0a3a95] text-white shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 rounded-xl overflow-hidden"
             >
               <span className="relative z-10 flex items-center gap-2">
-                Start Writing
+                Get Started
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
               </span>
 
@@ -129,7 +133,12 @@ export default function Landing() {
             <Button
               variant="outline"
               size="lg"
-              onClick={() => navigate("/features")}
+              onClick={() => {
+                const el = document.getElementById("features");
+                if (el) {
+                  el.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              }}
               className="px-8 py-6 text-base md:text-lg font-medium border-2 border-gray-300 hover:border-[#2369EB] hover:bg-blue-50 transition-all duration-300 rounded-xl"
             >
               Learn More
