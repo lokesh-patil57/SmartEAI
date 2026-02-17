@@ -38,7 +38,6 @@ async function callGemini(content, job, suggestions, mode) {
 
   try {
     const result = await model.generateContent(IMPROVE_SYSTEM + '\n\n' + userPrompt);
-    const response = result.response;
     if (!response || !response.text) throw new Error('Gemini returned no text');
     return response.text().trim();
   } catch (err) {
@@ -46,6 +45,8 @@ async function callGemini(content, job, suggestions, mode) {
       console.warn('Gemini overloaded, falling back to mock.');
       return mockImprove(content);
     }
+    // Use the helper to extract retryAfter if it's a 429
+    handleGeminiError(err);
     throw err;
   }
 }
@@ -66,6 +67,11 @@ async function callGeminiSection(sectionText, job, improvements, mode, sectionNa
     if (!response || !response.text) throw new Error('Gemini returned no text');
     return response.text().trim();
   } catch (err) {
+    if (err.status === 429 || err.message?.includes('429')) {
+      const e = new Error("Gemini API Rate Limit Exceeded. Please wait a moment.");
+      e.status = 429;
+      throw e;
+    }
     if (err.message.includes('503') || err.message.includes('overloaded')) {
       console.warn('Gemini overloaded, falling back to mock.');
       return mockImprove(sectionText, sectionName);
@@ -149,21 +155,25 @@ export async function draftColdMail(resume, context, recipientType = 'Recruiter'
   const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
 
   const prompt = `
-    You are an expert at writing high-impact cold emails.
+    You are an expert cold-email copywriter.
     
-    GOAL: Write a short, effective cold email to a ${recipientType} at ${company} for the role of ${role}.
+    GOAL: Write a high-converting cold email to a ${recipientType} at "${company}" for the role of "${role}".
     
-    RULES:
-    1. Keep it under 120 words.
-    2. Tone: Professional, human, direct. No fluff.
-    3. Use the RESUME to highlight 1-2 relevant points.
-    4. Use the CONTEXT (Job Description) to explain "Why me, why now".
-    5. Subject line must be catchy but professional.
+    STRICT REQUIREMENTS:
+    1. Length: MUST be between 100–115 words.
+    2. Tone: Clear, confident, professional.
+    3. NO Clichés: Avoid "I hope you're doing well", "My name is", etc. Start directly.
+    4. Structure:
+       - Subject Line: Concise (4-7 words).
+       - Paragraph 1: Who you are + Core Skill/Role.
+       - Paragraph 2: 2-3 Concrete skills/projects from Resume as proof. Show relevance to company.
+       - Paragraph 3: Low-pressure CTA (yes/no question or short call).
+    5. Formatting: Short paragraphs (2-3 lines max).
     
-    RESUME:
+    RESUME CONTENT:
     ${resume}
     
-    CONTEXT/JOB:
+    JOB/CONTEXT:
     ${context}
     
     OUTPUT FORMAT:
@@ -176,7 +186,13 @@ export async function draftColdMail(resume, context, recipientType = 'Recruiter'
     const result = await model.generateContent([prompt]);
     const response = await result.response;
     return response.text();
+    return "Subject: Interest in Role\n\nCould not generate email.";
   } catch (error) {
+    if (error.status === 429 || error.message?.includes('429')) {
+      const e = new Error("Gemini API Rate Limit Exceeded. Please wait a moment.");
+      e.status = 429;
+      throw e;
+    }
     handleGeminiError(error);
     return "Subject: Interest in Role\n\nCould not generate email.";
   }
@@ -229,53 +245,6 @@ export async function restructureContent(content) {
   }
 }
 
-/*
-export async function formatContent(content, template) {
-  const { GoogleGenerativeAI } = await import('@google/generative-ai');
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY is not set');
-
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
-
-  const prompt = `
-    You are an expert Document Formatter.
-    Your task is to REWRITE the "SOURCE CONTENT" to match the exact STRUCTURE and STYLE of the "TEMPLATE FORMAT".
-
-    RULES:
-    1. KEEP all information from "SOURCE CONTENT". Do not lose any data.
-    2. ADOPT the layout, headers, bullet style, casing, and spacing of "TEMPLATE FORMAT".
-       - If the template uses "EXPERIENCE" (all caps), you use "EXPERIENCE".
-       - If the template uses dates on the right, you format dates similarly in text (e.g. "Jan 2020 - Present").
-    3. If the template has sections that the source content doesn't have (e.g. "Awards"), you may omit them or leave them empty, but try to fit existing content into the template's logic.
-    4. RETURN ONLY the plain text of the formatted resume. Do not use Markdown unless the template implies it.
-    
-    TEMPLATE FORMAT:
-    ${template}
-
-    SOURCE CONTENT:
-    ${content}
-  `;
-
-  try {
-    const result = await model.generateContent([prompt]);
-    const response = await result.response;
-    return response.text();
-  } catch (error) {
-    if (error.status === 503 || error.message?.includes('503')) {
-      console.warn('Gemini Overloaded (503), returning original content with warning.');
-      return "Service overloaded. Please try again later.\n\n" + content;
-    }
-    if (error.status === 429 || error.message?.includes('429')) {
-      console.warn('Gemini Rate Limit (429), returning original content with warning.');
-      return "⚠️ API Rate Limit Exceeded (Google Gemini Free Tier).\nPlease wait about 60 seconds and try again.\n\n" + content;
-    }
-    throw error;
-  }
-}
-*/
-
-
 /* ================= COVER LETTER SERVICES ================= */
 
 export async function detectTone(jobDescription) {
@@ -312,8 +281,9 @@ export async function detectTone(jobDescription) {
     if (text.toLowerCase().includes('technical')) return 'Technical';
     return 'Formal';
   } catch (error) {
-    handleGeminiError(error); // Re-use error handler if possible or inline
-    return 'Formal'; // Fallback
+    // For tone detection, we can silently fail back to 'Formal'
+    console.warn("Tone detection failed:", error.message);
+    return 'Formal';
   }
 }
 
@@ -364,6 +334,11 @@ export async function draftCoverLetter(resume, job, tone = 'Formal', role = 'App
     const response = await result.response;
     return response.text();
   } catch (error) {
+    if (error.status === 429 || error.message?.includes('429')) {
+      const e = new Error("Gemini API Rate Limit Exceeded. Please wait a moment.");
+      e.status = 429;
+      throw e;
+    }
     handleGeminiError(error);
     return "Could not generate cover letter at this time.";
   }
@@ -374,8 +349,23 @@ function handleGeminiError(error) {
     console.warn('Gemini Overloaded (503)');
   } else if (error.status === 429 || error.message?.includes('429')) {
     console.warn('Gemini Rate Limit (429)');
+
+    // Attempt to extract wait time
+    let waitTime = 60; // Default
+    if (error.errorDetails) {
+      const retryInfo = error.errorDetails.find(d => d['@type']?.includes('RetryInfo'));
+      if (retryInfo && retryInfo.retryDelay) {
+        // Format is often "10.3s" or just "10s"
+        const seconds = parseFloat(retryInfo.retryDelay.replace('s', ''));
+        if (!isNaN(seconds)) waitTime = Math.ceil(seconds);
+      }
+    }
+
+    const e = new Error(`Gemini Rate Limit Exceeded. Please wait ${waitTime}s.`);
+    e.status = 429;
+    e.retryAfter = waitTime;
+    throw e;
   }
-  // Rethrow if needed or handled by caller, but here we just warn to allow fallbacks
 }
 
 function mockImprove(content, sectionName) {

@@ -61,7 +61,7 @@ export default function DiffViewer({ oldText, newText }) {
     const diffs = useMemo(() => computeDiff(oldText, newText), [oldText, newText]);
 
     return (
-        <div className="w-full h-full p-6 overflow-auto whitespace-pre-wrap font-mono text-sm leading-relaxed text-slate-700 bg-white">
+        <div className="w-full h-full p-6 overflow-auto whitespace-pre-wrap font-mono text-sm leading-relaxed text-slate-700 bg-white [&::-webkit-scrollbar]:hidden">
             {diffs.map((part, index) => {
                 if (part.type === 'added') {
                     return (

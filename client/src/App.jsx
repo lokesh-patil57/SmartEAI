@@ -3,6 +3,7 @@ import { useEffect } from "react";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 import Landing from "./pages/Landing";
 import Home from "./pages/Home";
@@ -59,136 +60,138 @@ function AppLayout({ children }) {
 
 export default function App() {
   return (
-    <Routes>
-      {/* Guest Routes - Only accessible when NOT logged in */}
-      <Route
-        path="/login"
-        element={
-          <GuestRoute>
-            <AppLayout>
-              <Login />
-            </AppLayout>
-          </GuestRoute>
-        }
-      />
-      <Route
-        path="/signup"
-        element={
-          <GuestRoute>
-            <AppLayout>
-              <Signup />
-            </AppLayout>
-          </GuestRoute>
-        }
-      />
+    <ThemeProvider defaultTheme="system" storageKey="smarteai-ui-theme">
+      <Routes>
+        {/* Guest Routes - Only accessible when NOT logged in */}
+        <Route
+          path="/login"
+          element={
+            <GuestRoute>
+              <AppLayout>
+                <Login />
+              </AppLayout>
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <GuestRoute>
+              <AppLayout>
+                <Signup />
+              </AppLayout>
+            </GuestRoute>
+          }
+        />
 
-      {/* Landing - Public; logged-in users can still see or redirect to /home */}
-      <Route
-        path="/"
-        element={
-          <AppLayout>
-            <Landing />
-          </AppLayout>
-        }
-      />
-
-      {/* Protected Routes - Require authentication */}
-      <Route
-        path="/home"
-        element={
-          <ProtectedRoute>
+        {/* Landing - Public; logged-in users can still see or redirect to /home */}
+        <Route
+          path="/"
+          element={
             <AppLayout>
-              <Home />
+              <Landing />
             </AppLayout>
-          </ProtectedRoute>
-        }
-      />
+          }
+        />
 
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <Dashboard />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
+        {/* Protected Routes - Require authentication */}
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Home />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
-      <Route
-        path="/resume"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <Resume />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/match"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <Match />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Dashboard />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
-      <Route
-        path="/restructure"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <Restructure />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
+        <Route
+          path="/resume"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Resume />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/match"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Match />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
-      <Route
-        path="/applications"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <Applications />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
+        <Route
+          path="/restructure"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Restructure />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
-      <Route
-        path="/editor"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <Editor />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
+        <Route
+          path="/applications"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Applications />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <Profile />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
+        <Route
+          path="/editor"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Editor />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
-      {/* Catch-all route - redirect to home */}
-      <Route
-        path="*"
-        element={
-          <AppLayout>
-            <Landing />
-          </AppLayout>
-        }
-      />
-    </Routes>
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Profile />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Catch-all route - redirect to home */}
+        <Route
+          path="*"
+          element={
+            <AppLayout>
+              <Landing />
+            </AppLayout>
+          }
+        />
+      </Routes>
+    </ThemeProvider>
   );
 }

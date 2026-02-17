@@ -6,6 +6,9 @@ export async function postImprove(req, res, next) {
     const improvedContent = await improveContent({ content, job, suggestions, mode });
     res.json({ improved_content: improvedContent });
   } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ error: err.message, retryAfter: err.retryAfter });
+    }
     next(err);
   }
 }
@@ -28,6 +31,9 @@ export async function postImproveSection(req, res, next) {
     });
     res.json({ rewritten_section: rewritten });
   } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ error: err.message, retryAfter: err.retryAfter });
+    }
     next(err);
   }
 }
@@ -37,6 +43,9 @@ export async function postRestructure(req, res, next) {
     const restructured = await restructureContent(content);
     res.json({ restructured_content: restructured });
   } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ error: err.message, retryAfter: err.retryAfter });
+    }
     next(err);
   }
 }
@@ -49,6 +58,9 @@ export async function postDetectTone(req, res, next) {
     const tone = await detectTone(jobDescription);
     res.json({ tone });
   } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ error: err.message, retryAfter: err.retryAfter });
+    }
     next(err);
   }
 }
@@ -60,6 +72,9 @@ export async function postDraftCoverLetter(req, res, next) {
     const draft = await draftCoverLetter(resume, job, tone, role, company);
     res.json({ draft });
   } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ error: err.message, retryAfter: err.retryAfter });
+    }
     next(err);
   }
 }
@@ -71,6 +86,9 @@ export async function postDraftColdMail(req, res, next) {
     const draft = await draftColdMail(resume, context, recipientType, role, company);
     res.json({ draft });
   } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ error: err.message, retryAfter: err.retryAfter });
+    }
     next(err);
   }
 }

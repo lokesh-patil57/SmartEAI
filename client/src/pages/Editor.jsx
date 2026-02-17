@@ -125,12 +125,80 @@ function Editor() {
   }, [editableContent, documentId, isLoggedIn, saveVersionToBackend]);
 
 
+  const [rateLimitCooldown, setRateLimitCooldown] = useState(0);
+
+  useEffect(() => {
+    if (rateLimitCooldown > 0) {
+      const timer = setInterval(() => setRateLimitCooldown(c => c - 1), 1000);
+      return () => clearInterval(timer);
+    }
+  }, [rateLimitCooldown]);
+
   /* ================= AI SECTION FLOW ================= */
+  const handleBatchImprovement = async () => {
+    if (rateLimitCooldown > 0) return;
+
+    setToast({ type: "info", message: "Improving entire resume (Batch Mode)..." });
+    setIsAiProcessing(true);
+    setPreAiContent(editableContent);
+    setHistory(prev => [...prev, editableContent]);
+
+    try {
+      const res = await api("/improve", {
+        method: "POST",
+        body: JSON.stringify({
+          content: editableContent,
+          job: matchInsights?.job || "",
+          suggestions: matchInsights?.suggestions || [],
+          mode: mode
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 429) {
+          const waitTime = data.retryAfter || 60;
+          setRateLimitCooldown(waitTime);
+          throw new Error(`Rate Limit Hit. Please wait ${waitTime}s.`);
+        }
+        throw new Error(data.error || "Request failed");
+      }
+
+      if (data.improved_content) {
+        setEditableContent(data.improved_content);
+        setToast({ type: "success", message: "Resume fully optimized!" });
+        setIsFlowComplete(true); // Mark as done so they can see full analysis
+      } else {
+        throw new Error("No content returned");
+      }
+    } catch (err) {
+      console.error("Batch AI Error:", err);
+      const isRateLimit = err.message.includes("Rate Limit") || err.message.includes("429");
+      setToast({
+        type: isRateLimit ? "warning" : "error",
+        message: err.message || "Failed to improve resume"
+      });
+      // Revert
+      if (history.length > 0) {
+        setEditableContent(history[history.length - 1]);
+        setHistory(h => h.slice(0, -1));
+      }
+    } finally {
+      setIsAiProcessing(false);
+    }
+  };
+
   const startAiImprovement = () => {
-    setToast({ type: "info", message: "Starting AI improvements..." });
-    setActiveSectionIndex(0); // Start with first section
+    if (rateLimitCooldown > 0) return;
+
+    // Resume if already started specific section, else start from 0
+    const startIndex = activeSectionIndex >= 0 ? activeSectionIndex : 0;
+
+    setToast({ type: "info", message: `Starting improvements for ${config.sections[startIndex]}...` });
+    setActiveSectionIndex(startIndex);
     setIsFlowComplete(false);
-    processSection(0, editableContent);
+    processSection(startIndex, editableContent);
   };
 
   const processSection = async (index, currentText) => {
@@ -165,6 +233,17 @@ function Editor() {
       });
 
       const data = await res.json();
+
+      if (!res.ok) {
+        // Handle Rate Limit with cooldown
+        if (res.status === 429) {
+          const waitTime = data.retryAfter || 60;
+          setRateLimitCooldown(waitTime);
+          throw new Error(`Rate Limit Hit. Please wait ${waitTime}s.`);
+        }
+        throw new Error(data.error || "Request failed");
+      }
+
       if (data.rewritten_section) {
         setEditableContent(data.rewritten_section);
         setReviewMode(true); // Switch to Review Mode to show diff
@@ -173,8 +252,16 @@ function Editor() {
       }
     } catch (err) {
       console.error("AI Error:", err);
-      setToast({ type: "error", message: `Failed to improve ${sectionName}` });
-      // Revert if failed
+
+      const isRateLimit = err.message.includes("Rate Limit") || err.message.includes("429");
+      setToast({
+        type: isRateLimit ? "warning" : "error",
+        message: err.message || `Failed to improve ${sectionName}`
+      });
+
+      // Revert if failed (unless it was just a rate limit check before changing text? 
+      // Actually if it failed, we haven't changed text yet usually, but we pushed history.
+      // Let's pop history to be safe so user is back to pre-request state)
       if (history.length > 0) {
         setEditableContent(history[history.length - 1]);
         setHistory(h => h.slice(0, -1));
@@ -190,8 +277,8 @@ function Editor() {
     const nextIndex = activeSectionIndex + 1;
 
     if (nextIndex < config.sections.length) {
+      // Manual Mode: Just move to next section, user must click "Improve"
       setActiveSectionIndex(nextIndex);
-      processSection(nextIndex, editableContent);
     } else {
       // Flow Complete: Trigger Re-analysis
       setIsFlowComplete(true);
@@ -280,6 +367,32 @@ function Editor() {
     setToast({ type: "success", message: "Redirecting to Full Analysis..." });
   };
 
+  const handleCreateCoverLetter = () => {
+    if (!editableContent) return;
+    navigate("/restructure", {
+      state: {
+        resume: editableContent,
+        job: matchInsights?.job || "",
+        mode: "cover-letter"
+      }
+    });
+    setToast({ type: "success", message: "Redirecting to Cover Letter Studio..." });
+  };
+
+  const handleCreateColdMail = () => {
+    if (!editableContent) return;
+    navigate("/restructure", {
+      state: {
+        resume: editableContent,
+        job: matchInsights?.job || "",
+        mode: "cold-mail",
+        role: "Role",       // Ideally parse from job if available
+        company: "Company"  // Ideally parse from job if available
+      }
+    });
+    setToast({ type: "success", message: "Opening Cold Mail Studio..." });
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -295,9 +408,14 @@ function Editor() {
             missingSkills={matchInsights.missingSkills}
             suggestions={matchInsights.suggestions}
             onApplyAI={startAiImprovement}
+            onBatchImprove={handleBatchImprovement}
             onFullAnalysis={handleFullAnalysis}
-            isApplying={activeSectionIndex >= 0 || isAiProcessing}
+            onCreateCoverLetter={handleCreateCoverLetter}
+            onCreateColdMail={handleCreateColdMail}
+            isApplying={isAiProcessing}
             isComplete={isFlowComplete}
+            currentSectionName={activeSectionIndex >= 0 ? config.sections[activeSectionIndex] : null}
+            cooldown={rateLimitCooldown}
           />
         )}
 
@@ -318,10 +436,10 @@ function Editor() {
                 Original Version
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 p-0 overflow-hidden">
+            <CardContent className="flex-1 p-0 overflow-hidden min-h-0">
               <textarea
                 readOnly
-                className="w-full h-full p-6 resize-none bg-transparent border-0 focus:ring-0 text-slate-500 text-sm leading-relaxed font-mono"
+                className="w-full h-full p-6 resize-none bg-transparent border-0 focus:ring-0 text-slate-500 text-sm leading-relaxed font-mono overflow-y-auto [&::-webkit-scrollbar]:hidden"
                 value={originalContent}
               />
             </CardContent>
@@ -364,7 +482,69 @@ function Editor() {
 
               {/* ... existing actions ... */}
               <div className="flex items-center gap-2">
-                {/* ... */}
+                {/* Save Status Indicator */}
+                <div className="flex items-center gap-1.5 mr-2 text-xs font-medium text-slate-400">
+                  {saveStatus === "Saved" ? (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  ) : saveStatus === "Saving…" ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />
+                  ) : (
+                    <span className="w-2 h-2 rounded-full bg-amber-400" />
+                  )}
+                  <span>{saveStatus}</span>
+                </div>
+
+                {/* AI Review Actions */}
+                {reviewMode ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRevertSection}
+                      className="h-8 text-xs border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                    >
+                      <Undo2 className="w-3.5 h-3.5 mr-1.5" />
+                      Revert
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleEditManually}
+                      className="h-8 text-xs border-slate-200 text-slate-600 hover:bg-slate-50"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 mr-1.5" />
+                      Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleAcceptSection}
+                      className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm shadow-emerald-200"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                      Accept & Next
+                    </Button>
+                  </>
+                ) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-8 px-2 text-xs">
+                        <Download className="w-3.5 h-3.5 mr-1.5" />
+                        Export
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => downloadFile("pdf")}>
+                        Export as PDF
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => downloadFile("docx")}>
+                        Export as DOCX
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => downloadFile("txt")}>
+                        Export as TXT
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </CardHeader>
 
@@ -380,12 +560,12 @@ function Editor() {
               </div>
             )}
 
-            <CardContent className="flex-1 p-0 relative bg-white">
+            <CardContent className="flex-1 p-0 relative bg-white min-h-0 overflow-hidden">
               {reviewMode ? (
                 <DiffViewer oldText={preAiContent} newText={editableContent} />
               ) : (
                 <Textarea
-                  className="w-full h-full p-6 resize-none bg-transparent border-0 focus:ring-0 text-slate-800 text-base leading-relaxed font-sans"
+                  className="w-full h-full p-6 resize-none bg-transparent border-0 focus:ring-0 text-slate-800 text-base leading-relaxed font-sans overflow-y-auto [&::-webkit-scrollbar]:hidden"
                   value={editableContent}
                   onChange={(e) => setEditableContent(e.target.value)}
                   placeholder={config.placeholder}

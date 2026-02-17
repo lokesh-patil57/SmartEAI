@@ -74,7 +74,7 @@ export default function Match() {
         tonePromise = api("/improve/detect-tone", {
           method: "POST",
           body: JSON.stringify({ jobDescription: job }),
-        }).then(res => res.json());
+        }).then(res => res.json()).catch(() => null);
       }
 
       const [matchRes, toneData] = await Promise.all([matchPromise, tonePromise]);
@@ -107,18 +107,23 @@ export default function Match() {
     setToast({ type: "info", message: "Generating initial draft..." });
     try {
       let data;
+      let res;
       if (mode === 'cold-mail') {
-        const res = await api("/improve/draft-cold-mail", {
+        res = await api("/improve/draft-cold-mail", {
           method: "POST",
           body: JSON.stringify({ resume, context: job, recipientType, role, company }),
         });
-        data = await res.json();
       } else {
-        const res = await api("/improve/draft-cover-letter", {
+        res = await api("/improve/draft-cover-letter", {
           method: "POST",
           body: JSON.stringify({ resume, job, tone, role, company, mode }),
         });
-        data = await res.json();
+      }
+
+      data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Request failed");
       }
 
       if (data.draft) {
@@ -137,7 +142,12 @@ export default function Match() {
         setToast({ type: "success", message: "Draft generated! Opening editor..." });
       }
     } catch (err) {
-      setToast({ type: "error", message: "Failed to generate draft." });
+      console.error("Generate Draft Error:", err);
+      const isRateLimit = err.message.includes("Rate Limit") || err.message.includes("429") || err.message.includes("Quota");
+      setToast({
+        type: isRateLimit ? "warning" : "error",
+        message: isRateLimit ? "AI Limit Reached. Please wait ~1 min." : "Failed to generate draft."
+      });
     }
   };
 
