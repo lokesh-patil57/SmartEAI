@@ -35,6 +35,10 @@ export const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
+export const googleLoginSchema = Joi.object({
+  credential: Joi.string().required(),
+});
+
 export const updateResumeSchema = Joi.object({
   resumeText: Joi.string().allow('').max(100000),
 });
