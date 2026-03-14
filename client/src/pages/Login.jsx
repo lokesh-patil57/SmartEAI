@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,6 +9,7 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
+  const googleAuthEnabled = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -76,6 +78,20 @@ export default function Login() {
             {loading ? "Signing in…" : "Sign in"}
           </Button>
         </form>
+        {googleAuthEnabled && (
+          <>
+            <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-slate-400">
+              <span className="h-px flex-1 bg-slate-200" />
+              <span>Or</span>
+              <span className="h-px flex-1 bg-slate-200" />
+            </div>
+            <GoogleSignInButton
+              redirectTo={from}
+              onError={setError}
+              label="signin_with"
+            />
+          </>
+        )}
         <p className="mt-6 text-center text-sm text-slate-600">
           Don&apos;t have an account?{" "}
           <Link to="/signup" className="font-medium text-[#2369EB] hover:underline">

@@ -1,7 +1,6 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { AuthContext } from "./auth-context";
 import { API_BASE } from "../lib/api";
-
-const AuthContext = createContext(null);
 
 const USER_KEY = "smarteai_user";
 const TOKEN_KEY = "token";
@@ -20,38 +19,11 @@ export function AuthProvider({ children }) {
 
   const isLoggedIn = Boolean(token);
 
-  useEffect(() => {
-    refreshUser().finally(() => setIsReady(true));
-  }, []);
-
-  const login = useCallback(async (email, password) => {
-    const res = await fetch(`${API_BASE}/api/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Login failed");
+  const persistAuth = useCallback((data) => {
     localStorage.setItem(TOKEN_KEY, data.token);
     localStorage.setItem(USER_KEY, JSON.stringify(data.user));
     setToken(data.token);
     setUser(data.user);
-    return data;
-  }, []);
-
-  const signup = useCallback(async (email, password, name = "") => {
-    const res = await fetch(`${API_BASE}/api/auth/signup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Signup failed");
-    localStorage.setItem(TOKEN_KEY, data.token);
-    localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-    setToken(data.token);
-    setUser(data.user);
-    return data;
   }, []);
 
   const logout = useCallback(() => {
@@ -75,10 +47,61 @@ export function AuthProvider({ children }) {
       } else if (res.status === 401) {
         logout();
       }
-    } catch (_) {
+    } catch {
       // ignore network errors
     }
   }, [logout]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function initializeAuth() {
+      await refreshUser();
+      if (isMounted) setIsReady(true);
+    }
+
+    initializeAuth();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshUser]);
+
+  const login = useCallback(async (email, password) => {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Login failed");
+    persistAuth(data);
+    return data;
+  }, [persistAuth]);
+
+  const signup = useCallback(async (email, password, name = "") => {
+    const res = await fetch(`${API_BASE}/api/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, name }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Signup failed");
+    persistAuth(data);
+    return data;
+  }, [persistAuth]);
+
+  const loginWithGoogle = useCallback(async (credential) => {
+    const res = await fetch(`${API_BASE}/api/auth/google`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ credential }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Google sign-in failed");
+    persistAuth(data);
+    return data;
+  }, [persistAuth]);
 
   return (
     <AuthContext.Provider
@@ -89,6 +112,7 @@ export function AuthProvider({ children }) {
         isReady,
         login,
         signup,
+        loginWithGoogle,
         logout,
         refreshUser,
       }}
@@ -96,10 +120,4 @@ export function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuthContext() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuthContext must be used within AuthProvider");
-  return ctx;
 }
