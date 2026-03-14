@@ -17,11 +17,32 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
-app.use(cors({ origin: true, credentials: true }));
-app.use(express.json({ limit: '2mb' }));
+const configuredOrigins = (process.env.CORS_ORIGIN || process.env.CLIENT_URLS || '')
+	.split(',')
+	.map((value) => value.trim())
+	.filter(Boolean);
 
-app.get('/ping-debug', (req, res) => res.send('pong-debug')); // DEBUG ROUTE
+const corsOptions = {
+	credentials: true,
+	origin(origin, callback) {
+		if (!origin) {
+			callback(null, true);
+			return;
+		}
+
+		if (!configuredOrigins.length || configuredOrigins.includes(origin)) {
+			callback(null, true);
+			return;
+		}
+
+		callback(new Error('Origin not allowed by CORS'));
+	},
+};
+
+// Middleware
+app.set('trust proxy', 1);
+app.use(cors(corsOptions));
+app.use(express.json({ limit: '2mb' }));
 
 
 // Routes

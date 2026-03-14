@@ -1,4 +1,7 @@
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+const rawApiBase = import.meta.env.VITE_API_BASE;
+const API_BASE = rawApiBase
+  ? rawApiBase.replace(/\/$/, "")
+  : (import.meta.env.DEV ? "http://localhost:5001" : "");
 
 export function getAuthHeaders() {
   const token = localStorage.getItem("token");
