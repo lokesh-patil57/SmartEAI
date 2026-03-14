@@ -18,6 +18,8 @@ import Profile from "./pages/Profile";
 import Restructure from "./pages/Restructure";
 
 import { ProtectedRoute, GuestRoute } from "./components/auth/ProtectedRoute";
+import { Analytics } from "@vercel/analytics/react";
+
 
 /* Scroll-aware navbar */
 function useScrollNavbar() {
@@ -181,6 +183,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        
 
         {/* Catch-all route - redirect to home */}
         <Route
@@ -192,6 +195,7 @@ export default function App() {
           }
         />
       </Routes>
+      <Analytics />
     </ThemeProvider>
   );
 }
