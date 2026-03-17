@@ -5,6 +5,15 @@ export const matchSchema = Joi.object({
   job: Joi.string().required().max(100000),
 });
 
+export const jobParseSchema = Joi.object({
+  jobText: Joi.string().required().max(120000),
+});
+
+export const jobAnalyzeSchema = Joi.object({
+  resume: Joi.string().required().max(120000),
+  job: Joi.string().required().max(120000),
+});
+
 export const improveSchema = Joi.object({
   content: Joi.string().required().max(200000),
   job: Joi.string().allow('').max(50000).default(''),
@@ -50,6 +59,7 @@ export const updateProfileSchema = Joi.object({
 export const documentSchema = Joi.object({
   title: Joi.string().trim().max(500),
   type: Joi.string().valid('resume', 'cover-letter', 'cold-mail'),
+  applicationId: Joi.string().trim().max(100).allow('', null),
 });
 
 export const versionSchema = Joi.object({
