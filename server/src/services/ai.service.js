@@ -26,20 +26,58 @@ RULES:
     - The rest of the document must remain UNTOUCHED.
 4.  **Output**: Return ONLY the full updated text. No explanations.`;
 
-async function callGemini(content, job, suggestions, mode) {
-  const { GoogleGenerativeAI } = await import('@google/generative-ai');
+const DEFAULT_GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
+
+function getGeminiModel() {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY is not set');
+  return import('@google/generative-ai').then(({ GoogleGenerativeAI }) => {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    return genAI.getGenerativeModel({ model: DEFAULT_GEMINI_MODEL });
+  });
+}
 
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
+function extractGeminiText(result) {
+  const response = result?.response;
+  const text = typeof response?.text === 'function' ? response.text() : '';
+  if (!text || typeof text !== 'string') {
+    throw new Error('Gemini returned no text');
+  }
+  return text.trim();
+}
 
+export async function callGeminiText({ systemPrompt = '', userPrompt = '', prompt = '' }) {
+  const model = await getGeminiModel();
+  const finalPrompt = prompt || [systemPrompt, userPrompt].filter(Boolean).join('\n\n');
+  const result = await model.generateContent(finalPrompt);
+  return extractGeminiText(result);
+}
+
+export function parseJsonFromAiText(text, fallback = {}) {
+  if (!text || typeof text !== 'string') return fallback;
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  const candidate = fenced?.[1] || text;
+  try {
+    return JSON.parse(candidate);
+  } catch {
+    const start = candidate.indexOf('{');
+    const end = candidate.lastIndexOf('}');
+    if (start >= 0 && end > start) {
+      try {
+        return JSON.parse(candidate.slice(start, end + 1));
+      } catch {
+        return fallback;
+      }
+    }
+    return fallback;
+  }
+}
+
+async function callGemini(content, job, suggestions, mode) {
   const userPrompt = `Mode: ${mode || 'resume'}\n\nJob context (use only to align wording, do not add job-specific lies):\n${job || 'None'}\n\nActionable suggestions to consider (do not invent facts):\n${(suggestions || []).join('\n') || 'None'}\n\nContent to improve (rewrite using ONLY this information):\n\n${content}`;
 
   try {
-    const result = await model.generateContent(IMPROVE_SYSTEM + '\n\n' + userPrompt);
-    if (!response || !response.text) throw new Error('Gemini returned no text');
-    return response.text().trim();
+    return await callGeminiText({ systemPrompt: IMPROVE_SYSTEM, userPrompt });
   } catch (err) {
     if (err.message.includes('503') || err.message.includes('overloaded')) {
       console.warn('Gemini overloaded, falling back to mock.');
@@ -52,20 +90,10 @@ async function callGemini(content, job, suggestions, mode) {
 }
 
 async function callGeminiSection(sectionText, job, improvements, mode, sectionName) {
-  const { GoogleGenerativeAI } = await import('@google/generative-ai');
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY is not set');
-
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
-
   const userPrompt = `Mode: ${mode || 'resume'}\n\nSection to Improve: ${sectionName || 'Unknown'}\n\nFULL Original Resume:\n${sectionText}\n\nJob Description:\n${job || 'None'}\n\nATS Improvements to incorporate:\n- ${(improvements || []).join('\n- ') || 'None'}\n\nEditing Goal:\nImprove the '${sectionName}' section to better match the job while following the rules.\nRETURN THE FULL RESUME with the improvements applied to that section.`;
 
   try {
-    const result = await model.generateContent(IMPROVE_SECTION_SYSTEM + '\n\n' + userPrompt);
-    const response = result.response;
-    if (!response || !response.text) throw new Error('Gemini returned no text');
-    return response.text().trim();
+    return await callGeminiText({ systemPrompt: IMPROVE_SECTION_SYSTEM, userPrompt });
   } catch (err) {
     if (err.status === 429 || err.message?.includes('429')) {
       const e = new Error("Gemini API Rate Limit Exceeded. Please wait a moment.");
@@ -147,13 +175,6 @@ async function callOpenAISection(sectionText, job, improvements, mode, sectionNa
 }
 
 export async function draftColdMail(resume, context, recipientType = 'Recruiter', role = 'Role', company = 'Company') {
-  const { GoogleGenerativeAI } = await import('@google/generative-ai');
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY is not set');
-
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
-
   const prompt = `
     You are an expert cold-email copywriter.
     
@@ -183,10 +204,7 @@ export async function draftColdMail(resume, context, recipientType = 'Recruiter'
   `;
 
   try {
-    const result = await model.generateContent([prompt]);
-    const response = await result.response;
-    return response.text();
-    return "Subject: Interest in Role\n\nCould not generate email.";
+    return await callGeminiText({ prompt });
   } catch (error) {
     if (error.status === 429 || error.message?.includes('429')) {
       const e = new Error("Gemini API Rate Limit Exceeded. Please wait a moment.");
@@ -199,14 +217,6 @@ export async function draftColdMail(resume, context, recipientType = 'Recruiter'
 }
 
 export async function restructureContent(content) {
-  const { GoogleGenerativeAI } = await import('@google/generative-ai');
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY is not set');
-
-  const genAI = new GoogleGenerativeAI(apiKey);
-  // Use the stable model
-  const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
-
   const prompt = `
     You are an expert Resume Writer and ATS (Applicant Tracking System) Specialist.
     Your task is to RESTRUCTURE and REWRITE the provided resume content into a highly professional, ATS-friendly format.
@@ -229,9 +239,7 @@ export async function restructureContent(content) {
   `;
 
   try {
-    const result = await model.generateContent([prompt]);
-    const response = await result.response;
-    return response.text();
+    return await callGeminiText({ prompt });
   } catch (error) {
     if (error.status === 503 || error.message?.includes('503')) {
       console.warn('Gemini Overloaded (503), returning original content with warning.');
@@ -248,13 +256,6 @@ export async function restructureContent(content) {
 /* ================= COVER LETTER SERVICES ================= */
 
 export async function detectTone(jobDescription) {
-  const { GoogleGenerativeAI } = await import('@google/generative-ai');
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY is not set');
-
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
-
   const prompt = `
     Analyze the TONE of this job description.
     Classify it into EXACTLY ONE of these categories:
@@ -271,9 +272,7 @@ export async function detectTone(jobDescription) {
   `;
 
   try {
-    const result = await model.generateContent([prompt]);
-    const response = await result.response;
-    let text = response.text().trim();
+    const text = await callGeminiText({ prompt });
     // Fallback normalization
     if (text.toLowerCase().includes('formal')) return 'Formal';
     if (text.toLowerCase().includes('startup')) return 'Startup';
@@ -288,13 +287,6 @@ export async function detectTone(jobDescription) {
 }
 
 export async function draftCoverLetter(resume, job, tone = 'Formal', role = 'Applicant', company = 'Hiring Team') {
-  const { GoogleGenerativeAI } = await import('@google/generative-ai');
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY is not set');
-
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
-
   const toneInstructions = {
     'Formal': 'Use professional, respectful, and structured language. Avoid slang. Focus on reliability.',
     'Startup': 'Be energetic, proactive, and show passion. Use brighter, punchier sentences.',
@@ -330,9 +322,7 @@ export async function draftCoverLetter(resume, job, tone = 'Formal', role = 'App
   `;
 
   try {
-    const result = await model.generateContent([prompt]);
-    const response = await result.response;
-    return response.text();
+    return await callGeminiText({ prompt });
   } catch (error) {
     if (error.status === 429 || error.message?.includes('429')) {
       const e = new Error("Gemini API Rate Limit Exceeded. Please wait a moment.");
