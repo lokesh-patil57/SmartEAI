@@ -1,10 +1,18 @@
 import app from './app.js';
 import connectDB from './config/db.js';
+import { initializeSkillVectors } from './services/skillIndexer.service.js';
 
 const PORT = process.env.PORT || 5001;
 
 connectDB()
-  .then(() => {
+  .then(async () => {
+    try {
+      const indexed = await initializeSkillVectors();
+      console.log(`Skill vectors initialized: ${indexed.count} (${indexed.source})`);
+    } catch (error) {
+      console.warn('Skill vector initialization failed. Continuing with runtime fallback.', error?.message || error);
+    }
+
     const server = app.listen(PORT, () => {
       console.log(`SmartEAI server running on http://localhost:${PORT}`);
       console.log(`Health: GET http://localhost:${PORT}/health`);
