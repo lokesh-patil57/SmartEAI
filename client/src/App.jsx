@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -16,6 +16,8 @@ import Signup from "./pages/Signup";
 import Match from "./pages/Match";
 import Profile from "./pages/Profile";
 import Restructure from "./pages/Restructure";
+
+const ApplicationDetails = lazy(() => import("./pages/ApplicationDetails"));
 
 import { ProtectedRoute, GuestRoute } from "./components/auth/ProtectedRoute";
 import { Analytics } from "@vercel/analytics/react";
@@ -63,6 +65,7 @@ function AppLayout({ children }) {
 export default function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="smarteai-ui-theme">
+      <Suspense fallback={<div className="min-h-screen bg-main pt-28 px-6"><div className="max-w-7xl mx-auto h-80 rounded-2xl bg-white/5 border border-white/10 animate-pulse" /></div>}>
       <Routes>
         {/* Guest Routes - Only accessible when NOT logged in */}
         <Route
@@ -163,6 +166,17 @@ export default function App() {
         />
 
         <Route
+          path="/applications/:id"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <ApplicationDetails />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/editor"
           element={
             <ProtectedRoute>
@@ -195,6 +209,7 @@ export default function App() {
           }
         />
       </Routes>
+      </Suspense>
       <Analytics />
     </ThemeProvider>
   );
