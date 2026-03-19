@@ -144,7 +144,7 @@ function Editor() {
     setHistory(prev => [...prev, editableContent]);
 
     try {
-      const res = await api("/improve", {
+      const res = await api("/api/improve", {
         method: "POST",
         body: JSON.stringify({
           content: editableContent,
@@ -218,7 +218,7 @@ function Editor() {
     setHistory(prev => [...prev, currentText]);
 
     try {
-      const res = await api("/improve/section", {
+      const res = await api("/api/improve/section", {
         method: "POST",
         body: JSON.stringify({
           sectionText: currentText, // Sending FULL text now
@@ -280,24 +280,27 @@ function Editor() {
       // Manual Mode: Just move to next section, user must click "Improve"
       setActiveSectionIndex(nextIndex);
     } else {
-      // Flow Complete: Trigger Re-analysis
+      // Flow Complete: Trigger lightweight re-analysis only (Gemini tasks remain user-clicked on Match page)
       setIsFlowComplete(true);
       setActiveSectionIndex(-1);
 
       if (matchInsights?.job) {
         setToast({ type: "info", message: "Re-analyzing your new resume..." });
         try {
-          const res = await api("/match", {
+          const res = await api("/api/match", {
             method: "POST",
             body: JSON.stringify({ resume: editableContent, job: matchInsights.job }),
           });
           const data = await res.json();
-          if (res.ok && data.score) {
+          if (res.ok && (data.score ?? data.atsScore ?? data.matchScore)) {
+            const score = data.score ?? data.atsScore?.score ?? data.matchScore;
+            const missing = data.missing_skills ?? data.missingSkills ?? data.atsScore?.missingSkills ?? [];
+            const suggestions = data.suggestions ?? data.atsScore?.suggestions ?? [];
             setMatchInsights(prev => ({
               ...prev,
-              score: data.score,
-              missingSkills: data.missing_skills || [],
-              suggestions: data.suggestions || []
+              score,
+              missingSkills: missing,
+              suggestions
             }));
             setToast({ type: "success", message: `Analysis complete! New Score: ${data.score}%` });
           }
@@ -338,7 +341,7 @@ function Editor() {
       if (type === "txt") {
         blob = new Blob([editableContent], { type: "text/plain" });
       } else {
-        const res = await api(`/download/${type}`, {
+        const res = await api(`/api/export/${type}`, {
           method: "POST",
           body: JSON.stringify({ content: editableContent }),
         });
