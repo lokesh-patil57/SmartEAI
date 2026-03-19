@@ -9,6 +9,8 @@ import exportRoutes from './routes/export.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import documentRoutes from './routes/document.routes.js';
 import parseRoutes from './routes/parse.routes.js';
+import jobRoutes from './routes/job.routes.js';
+import applicationRoutes from './routes/application.routes.js';
 
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFound } from './middleware/notFound.js';
@@ -47,18 +49,15 @@ app.use(express.json({ limit: '2mb' }));
 
 // Routes
 app.use('/health', healthRoutes);
+app.use('/api/health', healthRoutes);
 app.use('/api/match', matchRoutes);
 app.use('/api/improve', improveRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/parse', parseRoutes);
-
-// Backward-compatible aliases for client (so client can use same base URL + /match, /improve, /download)
-app.use('/match', matchRoutes);
-app.use('/improve', improveRoutes);
-app.use('/download', exportRoutes);
-app.use('/resumes', documentRoutes);
+app.use('/api/job', jobRoutes);
+app.use('/api/application', applicationRoutes);
 
 // 404
 app.use(notFound);
