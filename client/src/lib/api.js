@@ -66,4 +66,53 @@ export async function parseResumeFile(file) {
   return data.text;
 }
 
+// ─── Application Tracking API ──────────────────────────────────────────────────
+
+export async function getApplications(page = 1, limit = 12) {
+  const res = await api(`/api/application/user?page=${page}&limit=${limit}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to fetch applications");
+  return data;
+}
+
+export async function getApplicationById(id) {
+  const res = await api(`/api/application/${id}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to fetch application");
+  return data.application;
+}
+
+export async function updateApplicationStatus(applicationId, status) {
+  const res = await api("/api/application/status", {
+    method: "PATCH",
+    body: JSON.stringify({ applicationId, status }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to update status");
+  return data.application;
+}
+
+export async function exportApplicationsCsv() {
+  const res = await api("/api/application/export/csv");
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(data.error || "Failed to export CSV");
+  }
+  return res.blob();
+}
+
+export async function downloadDocumentAsTxt(documentId, fileName = "SmartEAI_Document.txt") {
+  const res = await api(`/api/documents/${documentId}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to load document");
+
+  const blob = new Blob([data.content || ""], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 export { API_BASE };
