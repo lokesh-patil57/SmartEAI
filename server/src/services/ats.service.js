@@ -3,6 +3,9 @@
  * Rule-based only. No AI. Source of truth for skills.
  */
 
+import { matchSkills } from './skillMatcher.service.js';
+import { findRelatedSkills as semanticFindRelatedSkills } from './semanticSkillMatcher.service.js';
+
 const WEIGHTS = { core: 50, tools: 30, experience: 20 };
 const MAX_SCORE = 100;
 const REALISTIC_MAX = 85;
@@ -57,6 +60,18 @@ function extractInText(vocabulary, normalized, tokens) {
   return [...found];
 }
 
+export function extractSkillSignals(text, { includeExperience = false } = {}) {
+  const normalized = normalize(text);
+  const tokens = tokenize(normalized);
+  const skills = [
+    ...extractInText(CORE_SKILLS, normalized, tokens),
+    ...extractInText(TOOLS, normalized, tokens),
+    ...(includeExperience ? extractInText(EXPERIENCE_TERMS, normalized, tokens) : []),
+  ];
+
+  return [...new Set(skills)];
+}
+
 function scoreCategory(found, total, weight) {
   if (total === 0) return weight;
   return Math.round((found / total) * weight);
@@ -94,6 +109,30 @@ function getSuggestionsForMissing(missingSkills) {
  */
 const CRITICAL_TOOLS = ['git', 'api', 'rest', 'docker', 'aws', 'sql', 'javascript', 'python', 'react', 'node'];
 
+function buildLearningPlan(missingSkills = []) {
+  return missingSkills.slice(0, 5).map((skill, index) =>
+    `Week ${index + 1}: practice ${skill} using one focused mini-project and document outcomes.`
+  );
+}
+
+async function findRelatedSkills(missingSkills = [], resumeText = '') {
+  const related = new Set();
+  const normalizedResume = normalize(resumeText);
+
+  for (const skill of missingSkills) {
+    const candidates = await semanticFindRelatedSkills(skill, { topK: 5, minSimilarity: 0.3 });
+    for (const candidate of candidates) {
+      const candidateName = candidate.skill;
+      if (!candidateName) continue;
+      if (normalizedResume.includes(candidateName.toLowerCase())) {
+        related.add(candidateName);
+      }
+    }
+  }
+
+  return [...related];
+}
+
 export function getSuggestions(missingSkills) {
   const fromRules = getSuggestionsForMissing(missingSkills);
   if (fromRules.length > 0) return fromRules;
@@ -103,7 +142,8 @@ export function getSuggestions(missingSkills) {
 /**
  * Main ATS match: resume vs job. Returns score (realistic 50–80%), matched/missing skills, suggestions, breakdown.
  */
-export function matchResumeToJob(resume, job) {
+export async function matchResumeToJob(resume, job, options = {}) {
+  const { includeSemantic = false, includeLearningPlan = true } = options;
   const normResume = normalize(resume);
   const normJob = normalize(job);
   const resTokens = tokenize(normResume);
@@ -141,17 +181,35 @@ export function matchResumeToJob(resume, job) {
     rawScore = Math.max(0, rawScore - penalty);
   }
 
+  let relatedSkills = [];
+  if (includeSemantic) {
+    const skillMatch = matchSkills(
+      [...matchedCore, ...matchedTools, ...matchedExp],
+      [...coreInJob, ...toolsInJob]
+    );
+    relatedSkills = await findRelatedSkills(skillMatch.missingSkills, resume);
+    const relatedSkillBonus = Math.min(12, relatedSkills.length * 2);
+    rawScore = Math.min(MAX_SCORE, rawScore + relatedSkillBonus);
+  }
+
   rawScore = Math.min(MAX_SCORE, rawScore);
   const realisticScore = Math.min(REALISTIC_MAX, Math.max(REALISTIC_MIN, rawScore));
 
   const matchedSkills = [...new Set([...matchedCore, ...matchedTools, ...matchedExp])];
   const missingSkills = [...new Set([...missingCore, ...missingTools, ...missingExp])];
   const suggestions = getSuggestions(missingSkills);
+  const learningPlan = includeLearningPlan ? buildLearningPlan(missingSkills) : [];
 
   return {
     score: realisticScore,
+    matchedSkills,
+    missingSkills,
+    relatedSkills,
+    learningPlan,
     matched_skills: matchedSkills,
     missing_skills: missingSkills,
+    related_skills: relatedSkills,
+    learning_plan: learningPlan,
     suggestions,
     breakdown: {
       core: coreScore,
