@@ -13,7 +13,7 @@ export default function Resume() {
   const { logout } = useAuth();
 
   useEffect(() => {
-    api("/resumes")
+    api("/api/documents")
       .then((res) => {
         if (res.status === 401) {
           logout();
@@ -28,7 +28,7 @@ export default function Resume() {
   }, [logout, navigate]);
 
   const createResume = async () => {
-    const res = await api("/resumes", {
+    const res = await api("/api/documents", {
       method: "POST",
       body: JSON.stringify({ title: "Untitled Resume", type: "resume" }),
     });

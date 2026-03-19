@@ -60,14 +60,14 @@ export default function Restructure() {
         setIsEditable(false);
 
         try {
-            let endpoint = "/improve/restructure";
+            let endpoint = "/api/improve/restructure";
             let body = { content: sourceText };
 
             if (isCoverLetterMode) {
-                endpoint = "/improve/draft-cover-letter";
+                endpoint = "/api/improve/draft-cover-letter";
                 body = { resume: sourceText, job: jobDescription };
             } else if (isColdMailMode) {
-                endpoint = "/improve/draft-cold-mail";
+                endpoint = "/api/improve/draft-cold-mail";
                 body = {
                     resume: sourceText,
                     context: jobDescription,
@@ -134,7 +134,7 @@ export default function Restructure() {
             if (type === "txt") {
                 blob = new Blob([outputText], { type: "text/plain" });
             } else {
-                const res = await api(`/download/${type}`, {
+                const res = await api(`/api/export/${type}`, {
                     method: "POST",
                     body: JSON.stringify({ content: outputText }),
                 });
