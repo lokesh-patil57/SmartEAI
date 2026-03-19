@@ -1,0 +1,35 @@
+{
+  "frontend": [
+    { "skill": "React", "aliases": ["React.js", "ReactJS"] },
+    { "skill": "Next.js", "aliases": ["NextJS", "Next"] },
+    { "skill": "Vue", "aliases": ["Vue.js", "VueJS"] },
+    { "skill": "Angular", "aliases": ["AngularJS"] },
+    { "skill": "Tailwind", "aliases": ["Tailwind CSS", "TailwindCSS"] },
+    { "skill": "TypeScript", "aliases": ["TS"] },
+    { "skill": "JavaScript", "aliases": ["JS", "ECMAScript"] }
+  ],
+  "backend": [
+    { "skill": "Node.js", "aliases": ["Node", "NodeJS"] },
+    { "skill": "Express", "aliases": ["Express.js"] },
+    { "skill": "Django", "aliases": [] },
+    { "skill": "Spring Boot", "aliases": ["Spring"] },
+    { "skill": "REST APIs", "aliases": ["REST", "HTTP APIs"] },
+    { "skill": "GraphQL", "aliases": [] },
+    { "skill": "Microservices", "aliases": ["Micro-services"] }
+  ],
+  "databases": [
+    { "skill": "MongoDB", "aliases": ["Mongo"] },
+    { "skill": "PostgreSQL", "aliases": ["Postgres"] },
+    { "skill": "MySQL", "aliases": [] },
+    { "skill": "Redis", "aliases": [] },
+    { "skill": "SQL", "aliases": ["Relational Database"] }
+  ],
+  "devops": [
+    { "skill": "Docker", "aliases": ["Containers"] },
+    { "skill": "Kubernetes", "aliases": ["K8s"] },
+    { "skill": "AWS", "aliases": ["Amazon Web Services"] },
+    { "skill": "CI/CD", "aliases": ["Continuous Integration", "Continuous Delivery"] },
+    { "skill": "GitHub Actions", "aliases": ["GHA"] },
+    { "skill": "Jenkins", "aliases": [] }
+  ]
+}

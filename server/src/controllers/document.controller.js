@@ -1,5 +1,6 @@
 import { DocumentModel } from '../models/Document.js';
 import { Version } from '../models/Version.js';
+import { addGeneratedAsset } from './application.controller.js';
 
 export async function listDocuments(req, res, next) {
   try {
@@ -20,11 +21,20 @@ export async function createDocument(req, res, next) {
   try {
     const title = req.body.title || 'Untitled Resume';
     const type = req.body.type || 'resume';
+    const applicationId = req.body.applicationId || null;
     const doc = await DocumentModel.create({
       title,
       userId: req.user._id,
       type,
     });
+
+    if (applicationId) {
+      await addGeneratedAsset(applicationId, req.user._id, {
+        type,
+        documentId: doc._id,
+      });
+    }
+
     res.status(201).json({ id: doc._id.toString(), title: doc.title, type: doc.type });
   } catch (err) {
     next(err);
