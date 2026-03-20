@@ -189,8 +189,8 @@ export default function Applications() {
     : applications;
 
   return (
-    <div className="min-h-screen bg-main pt-28 px-4 sm:px-6 pb-16">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-main pt-24 lg:pt-32 pb-20 px-6 lg:px-20 relative z-10 overflow-hidden">
+      <div className="max-w-6xl mx-auto space-y-10 relative z-10">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div>
             <h1 className="text-4xl font-bold mb-1">Your <span className="text-sky-400">Applications</span></h1>
