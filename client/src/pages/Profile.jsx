@@ -92,8 +92,8 @@ export default function Profile() {
   const resumeCharCount = resumePreview.length;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pt-28 px-6 pb-12">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-[#F8FAFC] pt-24 lg:pt-32 pb-20 px-6 lg:px-20 relative z-10 overflow-hidden">
+      <div className="max-w-4xl mx-auto space-y-10 relative z-10">
         {/* Header */}
         <header>
           <h1 className="text-3xl md:text-4xl font-semibold text-slate-900">My Profile</h1>
