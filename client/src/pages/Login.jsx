@@ -23,7 +23,7 @@ export default function Login() {
     setLoading(true);
     try {
       await login(email.trim(), password);
-      navigate(from, { replace: true });
+      navigate("/home", { replace: true });
     } catch (err) {
       setError(err.message || "Login failed");
     } finally {
@@ -86,7 +86,7 @@ export default function Login() {
               <span className="h-px flex-1 bg-slate-200" />
             </div>
             <GoogleSignInButton
-              redirectTo={from}
+              redirectTo="/home"
               onError={setError}
               label="signin_with"
             />
