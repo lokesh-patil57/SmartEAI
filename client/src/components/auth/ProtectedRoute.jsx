@@ -22,8 +22,7 @@ export function ProtectedRoute({ children, requireAuth = true }) {
     // User must NOT be logged in (e.g., login page)
     if (isLoggedIn) {
       // Redirect to dashboard (or the page they were trying to access)
-      const redirectTo = location.state?.from?.pathname || "/dashboard";
-      return <Navigate to={redirectTo} replace />;
+      return <Navigate to="/home" replace />;
     }
   }
 
