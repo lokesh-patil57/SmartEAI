@@ -15,7 +15,7 @@ export default function HeroSentence() {
   }, []);
 
   return (
-    <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.15] text-foreground max-w-5xl mx-auto">
+    <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.15] text-foreground max-w-5xl mx-auto tracking-tighter">
       <span className="block">Turning</span>
       <span className="block mt-2 md:mt-3">
         <span
