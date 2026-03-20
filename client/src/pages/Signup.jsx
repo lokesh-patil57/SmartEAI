@@ -24,7 +24,7 @@ export default function Signup() {
     setLoading(true);
     try {
       await signup(email.trim(), password, name.trim());
-      navigate(from, { replace: true });
+      navigate("/home", { replace: true });
     } catch (err) {
       setError(err.message || "Signup failed");
     } finally {
@@ -101,7 +101,7 @@ export default function Signup() {
               <span className="h-px flex-1 bg-slate-200" />
             </div>
             <GoogleSignInButton
-              redirectTo={from}
+              redirectTo="/home"
               onError={setError}
               label="signup_with"
             />
