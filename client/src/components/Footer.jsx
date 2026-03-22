@@ -3,25 +3,25 @@ import { Link } from "react-router-dom";
 export default function Footer() {
   return (
     <footer className="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-8">
 
           {/* Brand Column */}
           <div className="md:col-span-1 space-y-4">
             <Link to="/" className="inline-block">
-              <span className="text-2xl font-bold text-slate-900 dark:text-white transition-colors">
+              <span className="text-lg font-bold text-slate-900 dark:text-white transition-colors">
                 Smart<span className="text-blue-600 dark:text-blue-400">EAI</span>
               </span>
             </Link>
-            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed transition-colors">
+            <p className="text-slate-600 dark:text-slate-400 text-[12px] leading-relaxed transition-colors">
               Your AI-powered career assistant. Build professional resumes, matched perfectly to your dream job.
             </p>
           </div>
 
           {/* Product Links */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-slate-900 dark:text-white transition-colors">Product</h4>
-            <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+            <h4 className="text-xs font-semibold text-slate-900 dark:text-white transition-colors">Product</h4>
+            <ul className="space-y-1.5 text-[12px] text-slate-600 dark:text-slate-400">
               <li><Link to="/home" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Resume Builder</Link></li>
               <li><Link to="/match" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Job Matcher</Link></li>
               <li><Link to="/features" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Cover Letters</Link></li>
@@ -31,8 +31,8 @@ export default function Footer() {
 
           {/* Company Links */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-slate-900 dark:text-white transition-colors">Company</h4>
-            <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+            <h4 className="text-xs font-semibold text-slate-900 dark:text-white transition-colors">Company</h4>
+            <ul className="space-y-1.5 text-[12px] text-slate-600 dark:text-slate-400">
               <li><Link to="/about" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">About Us</Link></li>
               <li><Link to="/careers" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Careers</Link></li>
               <li><Link to="/blog" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Blog</Link></li>
@@ -42,8 +42,8 @@ export default function Footer() {
 
           {/* Legal Links */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-slate-900 dark:text-white transition-colors">Legal</h4>
-            <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+            <h4 className="text-xs font-semibold text-slate-900 dark:text-white transition-colors">Legal</h4>
+            <ul className="space-y-1.5 text-[12px] text-slate-600 dark:text-slate-400">
               <li><Link to="/privacy" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Privacy Policy</Link></li>
               <li><Link to="/terms" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Terms of Service</Link></li>
               <li><Link to="/cookie" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Cookie Policy</Link></li>
@@ -53,7 +53,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4 transition-colors">
-          <p className="text-sm text-slate-500 dark:text-slate-500">
+          <p className="text-[12px] text-slate-500 dark:text-slate-500">
             © {new Date().getFullYear()} SmartEAI. All rights reserved.
           </p>
           <div className="flex gap-6">
