@@ -102,13 +102,13 @@ function Home() {
     >
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full pt-20 lg:pt-28 pb-12 px-6 lg:px-8 flex flex-col items-center relative z-10 overflow-y-auto">
+      <main className="flex-1 w-full pt-12 lg:pt-20 pb-8 px-6 lg:px-8 flex flex-col items-center relative z-10 overflow-y-auto">
 
 
 
         {/* Centered Hero Text */}
-        <div className="flex flex-col items-center text-center w-full max-w-4xl mx-auto mb-16 animate-[fadeIn_1s_ease-out]">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl lg:text-[68px] font-black text-slate-900 tracking-tighter mb-6">
+        <div className="flex flex-col items-center text-center w-full max-w-4xl mx-auto mb-8 animate-[fadeIn_1s_ease-out]">
+          <h1 className="text-2xl md:text-5xl lg:text-[53px] font-black text-slate-900 tracking-tighter mb-4">
             Welcome to{" "}
             <span className="text-[#2369EB] inline-block">
               {"SmartEAI".split("").map((char, index) => (
@@ -128,7 +128,7 @@ function Home() {
               ))}
             </span>
           </h1>
-          <p className="text-[17px] md:text-[19px] text-slate-600 leading-[1.8] max-w-3xl">
+          <p className="text-[14px] md:text-[15px] text-slate-600 leading-[1.6] max-w-2xl">
             Choose what you want to work on. SmartEAI is dedicated to{" "}
             <span className="text-[#2369EB] font-semibold">revolutionizing career prep</span>{" "}
             through intelligent formatting, enabling you to move from unstructured input to{" "}
@@ -138,7 +138,7 @@ function Home() {
         </div>
 
         {/* Interactive Fluid Accordion - Centered Below */}
-        <div className="w-full max-w-4xl h-[450px] lg:h-[550px] flex flex-col gap-3 lg:gap-4 animate-[fadeIn_1.2s_ease-out]">
+        <div className="w-full max-w-4xl h-[350px] lg:h-[450px] flex flex-col gap-1.5 lg:gap-2 animate-[fadeIn_1.2s_ease-out]">
           {features.map((feature, index) => {
             const isActive = activeCard === index;
 
@@ -156,16 +156,16 @@ function Home() {
 
                   {/* Header Row */}
                   <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm shrink-0
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-500 shadow-sm shrink-0
                       ${isActive ? feature.activeIconBg + ' scale-110' : feature.iconBg + ' scale-100'}
                     `}>
-                      <feature.icon size={24} className="stroke-[2]" />
+                      <feature.icon size={16} className="stroke-[2]" />
                     </div>
 
                     <h2 className={`transition-all duration-500 whitespace-nowrap overflow-hidden text-ellipsis
                       ${isActive
-                        ? 'text-2xl lg:text-3xl text-slate-900 font-bold tracking-tight'
-                        : 'text-lg lg:text-xl text-slate-500 font-semibold group-hover:text-[#2369EB]'}
+                        ? 'text-lg lg:text-xl text-slate-900 font-bold tracking-tight'
+                        : 'text-[13px] lg:text-sm text-slate-500 font-semibold group-hover:text-[#2369EB]'}
                     `}>
                       {isActive ? feature.title : feature.shortTitle}
                     </h2>
@@ -177,15 +177,15 @@ function Home() {
                       ? 'opacity-100 max-h-[300px] mt-6 translate-y-0'
                       : 'opacity-0 max-h-0 mt-0 translate-y-4 pointer-events-none'}
                   `}>
-                    <p className="text-slate-600 text-[17px] max-w-2xl leading-relaxed mb-8">
+                    <p className="text-slate-600 text-[14px] max-w-xl leading-relaxed mb-6">
                       {feature.desc}
                     </p>
 
                     {feature.isLink ? (
                       <Link to={feature.link}>
-                        <button className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 px-6 rounded-xl transition-all shadow-md hover:shadow-lg hover:shadow-blue-600/25 active:scale-[0.98]">
-                          <span>{feature.btn}</span>
-                          <ArrowRight size={18} className="stroke-[2.5]" />
+                        <button className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-all shadow-sm hover:shadow-md hover:shadow-blue-600/25 active:scale-[0.98]">
+                          <span className="text-sm">{feature.btn}</span>
+                          <ArrowRight size={14} className="stroke-[2.5]" />
                         </button>
                       </Link>
                     ) : (
@@ -193,19 +193,19 @@ function Home() {
                         <button
                           onClick={feature.action}
                           disabled={feature.disabled || (uploadMessage && uploadMessage.type === 'success')}
-                          className={`inline-flex items-center gap-2 font-semibold py-3.5 px-6 rounded-xl transition-all shadow-md active:scale-[0.98] disabled:cursor-not-allowed
+                          className={`inline-flex items-center gap-2 font-semibold py-2.5 px-4 rounded-lg transition-all shadow-sm active:scale-[0.98] disabled:cursor-not-allowed
                             ${uploading
                               ? 'bg-blue-400 text-white'
                               : uploadMessage && uploadMessage.type === 'success'
                                 ? 'bg-green-500 text-white hover:bg-green-600 shadow-green-500/20'
-                                : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg hover:shadow-blue-600/25'}
+                                : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-md hover:shadow-blue-600/25'}
                           `}
                         >
-                          <span>{feature.btn}</span>
+                          <span className="text-sm">{feature.btn}</span>
                           {uploadMessage && uploadMessage.type === 'success' ? (
-                            <Check size={20} className="ml-1 text-white stroke-[2.5]" />
+                            <Check size={16} className="ml-1 text-white stroke-[2.5]" />
                           ) : (
-                            <ArrowRight size={18} className="stroke-[2.5]" />
+                            <ArrowRight size={14} className="stroke-[2.5]" />
                           )}
                         </button>
                         {feature.showReupload && (
@@ -254,8 +254,8 @@ function Home() {
               <div className="flex flex-col items-center w-full relative">
                 <div
                   className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center mb-3 mx-auto ${uploadMessage.type === "success"
-                      ? "bg-green-100 text-green-600"
-                      : "bg-red-100 text-red-600"
+                    ? "bg-green-100 text-green-600"
+                    : "bg-red-100 text-red-600"
                     }`}
                 >
                   {uploadMessage.type === "success" ? (
@@ -267,8 +267,8 @@ function Home() {
                   <button
                     onClick={() => setShowToast(false)}
                     className={`absolute right-0 top-0 inline-flex text-gray-400 hover:text-gray-600 transition-colors duration-200 ${uploadMessage.type === "success"
-                        ? "hover:text-green-600"
-                        : "hover:text-red-600"
+                      ? "hover:text-green-600"
+                      : "hover:text-red-600"
                       }`}
                     aria-label="Close"
                     style={{ transform: "translateY(-50%) translateX(50%)" }}
@@ -278,7 +278,7 @@ function Home() {
                 </div>
               </div>
               <div
-                className={`text-[15px] font-medium text-center break-words ${uploadMessage.type === "success" ? "text-green-700" : "text-red-700"
+                className={`text-[14px] font-medium text-center break-words ${uploadMessage.type === "success" ? "text-green-700" : "text-red-700"
                   }`}
                 style={{ wordBreak: "break-word" }}
               >
