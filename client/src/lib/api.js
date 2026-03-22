@@ -68,11 +68,20 @@ export async function parseResumeFile(file) {
 
 // ─── Application Tracking API ──────────────────────────────────────────────────
 
-export async function getApplications(page = 1, limit = 12) {
-  const res = await api(`/api/application/user?page=${page}&limit=${limit}`);
+export async function getApplications(page = 1, limit = 12, targetRole = '') {
+  const params = new URLSearchParams({ page, limit });
+  if (targetRole) params.set('targetRole', targetRole);
+  const res = await api(`/api/application/user?${params}`);
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Failed to fetch applications");
+  if (!res.ok) throw new Error(data.error || 'Failed to fetch applications');
   return data;
+}
+
+export async function getApplicationsByRole() {
+  const res = await api('/api/application/by-role');
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to fetch role groups');
+  return data; // { roles: [...] }
 }
 
 export async function getApplicationById(id) {
