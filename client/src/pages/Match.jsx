@@ -36,13 +36,13 @@ function ScoreRing({ score = 0 }) {
   const strokeDashoffset = circumference - (normalizedScore / 100) * circumference;
 
   return (
-    <div className="relative w-36 h-36 mx-auto">
-      <svg className="w-36 h-36 -rotate-90" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r={radius} stroke="#E2E8F0" strokeWidth="8" fill="none" />
+    <div className="relative w-28 h-28 mx-auto">
+      <svg className="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42" stroke="#E2E8F0" strokeWidth="8" fill="none" />
         <circle
           cx="50"
           cy="50"
-          r={radius}
+          r="42"
           stroke="#2369EB"
           strokeWidth="8"
           fill="none"
@@ -51,7 +51,7 @@ function ScoreRing({ score = 0 }) {
           strokeDashoffset={strokeDashoffset}
         />
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center text-2xl font-bold text-[#2369EB]">
+      <div className="absolute inset-0 flex items-center justify-center text-xl font-bold text-[#2369EB]">
         {normalizedScore}%
       </div>
     </div>
@@ -64,7 +64,7 @@ const CleanInput = ({ label, placeholder, icon: Icon, delay = "0s", value, onCha
 
   return (
     <div className="relative animate-[fadeInUp_0.5s_ease-out_forwards] opacity-0" style={{ animationDelay: delay }}>
-      <label className={`block text-[12px] font-bold mb-1.5 transition-colors duration-200 ${isFocused ? 'text-[#2369EB]' : 'text-slate-500'}`}>
+      <label className={`block text-[11px] font-bold mb-1 transition-colors duration-200 ${isFocused ? 'text-[#2369EB]' : 'text-slate-500'}`}>
         {label}
       </label>
       <div className="relative flex items-center">
@@ -79,8 +79,8 @@ const CleanInput = ({ label, placeholder, icon: Icon, delay = "0s", value, onCha
           type="text"
           value={value}
           onChange={onChange}
-          className={`w-full bg-white border outline-none transition-all duration-200 text-[14px] text-slate-800 placeholder:text-slate-300 rounded-lg
-            ${Icon ? 'pl-10 pr-4 py-2.5' : 'px-4 py-2.5'}
+          className={`w-full bg-white border outline-none transition-all duration-200 text-[13px] text-slate-800 placeholder:text-slate-300 rounded-lg
+            ${Icon ? 'pl-9 pr-3 py-2' : 'px-3 py-2'}
             ${isFocused ? 'border-[#2369EB] ring-4 ring-[#2369EB]/10' : 'border-slate-200 hover:border-slate-300'}
           `}
           placeholder={placeholder}
@@ -111,7 +111,27 @@ export default function Match() {
   const [targetRoleInput, setTargetRoleInput] = useState("");
   const [pendingAnalysisPayload, setPendingAnalysisPayload] = useState(null);
   const fileInputRef = useRef(null);
+  const tabsRef = useRef([]);
   const { isLoggedIn } = useAuth();
+
+  const tabs = [
+    { key: "cover-letter", label: "Cover Letter" },
+    { key: "cold-mail", label: "Cold Mail" },
+    { key: "resume", label: "Resume" },
+  ];
+
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+
+  useEffect(() => {
+    const activeIndex = tabs.findIndex(t => t.key === mode);
+    const activeElement = tabsRef.current[activeIndex];
+    if (activeElement) {
+      setIndicatorStyle({
+        left: activeElement.offsetLeft,
+        width: activeElement.offsetWidth,
+      });
+    }
+  }, [mode]);
 
   // Base `/api/match` is lightweight; Gemini-powered enrichments are loaded only after the user clicks each process.
   const matchedSkills = result?.atsResult?.matchedSkills || result?.matchedSkills || result?.matched_skills || [];
@@ -406,29 +426,27 @@ export default function Match() {
 
   return (
     <div className="min-h-screen font-sans text-slate-900 selection:bg-[#2369EB]/20 selection:text-[#2369EB] flex flex-col bg-white" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-      <main className="flex-1 w-full bg-[#F8FAFC] min-h-screen pt-24 lg:pt-32 pb-20 px-6 lg:px-20 relative z-10 overflow-hidden">
-        <div className="max-w-6xl mx-auto space-y-10 relative z-10">
+      <main className="flex-1 w-full bg-[#F8FAFC] min-h-screen pt-16 lg:pt-24 pb-12 px-6 lg:px-20 relative z-10 overflow-hidden">
+        <div className="max-w-6xl mx-auto space-y-6 relative z-10">
 
-          {/* Header */}
-          <div className="mt-3 animate-[fadeInDown_0.5s_ease-out]">
-            <div className="flex gap-4 mb-6">
-
+          {/* Header */}          <div className="mt-3 animate-[fadeInDown_0.5s_ease-out]">
+            <div className="flex gap-4 mb-4">
               <button
                 onClick={() => navigate('/dashboard')}
-                className="group inline-flex items-center gap-2 text-slate-500 hover:text-[#2369EB] transition-colors text-sm font-semibold tracking-wide uppercase"
+                className="group inline-flex items-center gap-2 text-slate-500 hover:text-[#2369EB] transition-colors text-[13px] font-semibold tracking-wide uppercase"
               >
-                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm border border-slate-200 group-hover:border-[#2369EB]/30 group-hover:scale-110 transition-all">
-                  <ChevronLeft size={16} />
+                <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-sm border border-slate-200 group-hover:border-[#2369EB]/30 group-hover:scale-110 transition-all">
+                  <ChevronLeft size={14} />
                 </div>
                 Return to Workspace
               </button>
             </div>
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div>
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                <h2 className="text-xl md:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
                   Resume ↔ Job Matching
                 </h2>
-                <p className="text-slate-400 mt-4 text-xl font-medium max-w-3xl">Design, build, and optimize your application materials with AI.</p>
+                <p className="text-slate-500 mt-1.5 text-base font-medium max-w-xl">Design, build, and optimize your application materials with AI.</p>
               </div>
 
               <div className="flex flex-col gap-3">
@@ -448,13 +466,13 @@ export default function Match() {
                   <button
                     disabled={!resume.trim() || !job.trim() || loading}
                     onClick={handleAnalyzeClick}
-                    className="bg-[#2369EB] text-white px-8 py-3 rounded-xl text-[14px] font-bold shadow-[0_4px_14px_rgba(35,105,235,0.25)] hover:shadow-[0_6px_20px_rgba(35,105,235,0.4)] hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                    className="bg-[#2369EB] text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-[0_4px_14px_rgba(35,105,235,0.25)] hover:shadow-[0_6px_20px_rgba(35,105,235,0.4)] hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                   >
                     {loading ? "Analyzing..." : "Analyze Match"}
                   </button>
                   <button
                     onClick={() => { setJob(""); setResult(null); setTargetRole(""); }}
-                    className="bg-white border border-slate-200 px-8 py-3 rounded-xl text-[14px] font-semibold text-slate-700 hover:border-[#2369EB] transition-all"
+                    className="bg-white border border-slate-200 px-6 py-2.5 rounded-lg text-sm font-semibold text-slate-700 hover:border-[#2369EB] transition-all"
                   >
                     Start with new job description
                   </button>
@@ -463,21 +481,29 @@ export default function Match() {
             </div>
           </div>
 
-          {/* Segmented Control */}
-          <div className="flex items-center p-1 bg-slate-200/50 rounded-lg w-fit animate-[fadeIn_0.6s_ease-out]">
-            {[
-              { key: "cover-letter", label: "Cover Letter" },
-              { key: "cold-mail", label: "Cold Mail" },
-              { key: "resume", label: "Resume" },
-            ].map(type => (
-              <button
-                key={type.key}
-                onClick={() => setMode(type.key)}
-                className={`px-8 py-3 rounded-full text-lg font-semibold transition-all duration-200 ${mode === type.key ? 'bg-white text-[#2369EB] shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
-              >
-                {type.label}
-              </button>
-            ))}
+          {/* Floating Island Tab Indicator (Slider) */}
+          <div className="relative inline-flex p-1.5 bg-slate-100 rounded-full border border-slate-200/60 shadow-inner animate-[fadeIn_0.6s_ease-out]">
+            {/* Sliding Pill */}
+            <div
+              className="absolute top-1.5 bottom-1.5 bg-white rounded-full shadow-md border border-slate-100 transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1)"
+              style={indicatorStyle}
+            />
+
+            {tabs.map((type, idx) => {
+              const isActive = mode === type.key;
+              return (
+                <button
+                  key={type.key}
+                  ref={(el) => (tabsRef.current[idx] = el)}
+                  onClick={() => setMode(type.key)}
+                  className={`relative z-10 px-6 py-2 font-bold text-sm transition-colors duration-300 rounded-full
+                    ${isActive ? 'text-[#2369EB]' : 'text-slate-500 hover:text-slate-800'}
+                  `}
+                >
+                  {type.label}
+                </button>
+              );
+            })}
           </div>
 
           {/* ===== RESULTS ===== */}
@@ -486,27 +512,27 @@ export default function Match() {
               {/* Row 1: Score + Process Controls */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="border-blue-100 shadow-lg shadow-blue-500/5">
-                  <CardHeader><CardTitle>Match Score</CardTitle></CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardHeader className="py-3"><CardTitle className="text-base">Match Score</CardTitle></CardHeader>
+                  <CardContent className="space-y-2 pb-4">
                     <ScoreRing score={score} />
-                    <p className="text-slate-500 text-sm text-center">Overall alignment with the role</p>
+                    <p className="text-slate-500 text-xs text-center">Overall alignment with the role</p>
                   </CardContent>
                 </Card>
 
                 <Card className="shadow-sm md:col-span-2">
-                  <CardHeader><CardTitle>AI Process Controls</CardTitle></CardHeader>
-                  <CardContent className="space-y-4 text-sm text-slate-700">
+                  <CardHeader className="py-3"><CardTitle className="text-base">AI Process Controls</CardTitle></CardHeader>
+                  <CardContent className="space-y-3 text-[13px] text-slate-700 pb-4">
                     <p className="text-slate-500">
                       Gemini tasks now run only after you click each process. Start with base ATS analysis, then trigger the AI steps you want.
                     </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <Button type="button" variant="outline" onClick={handleLoadRelatedSkills} disabled={processLoading.related}>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <Button type="button" size="sm" variant="outline" className="text-[11px] h-8" onClick={handleLoadRelatedSkills} disabled={processLoading.related}>
                         {processLoading.related ? "Loading..." : "Find Related Skills"}
                       </Button>
-                      <Button type="button" variant="outline" onClick={handleLoadLearningPath} disabled={processLoading.roadmap}>
+                      <Button type="button" size="sm" variant="outline" className="text-[11px] h-8" onClick={handleLoadLearningPath} disabled={processLoading.roadmap}>
                         {processLoading.roadmap ? "Loading..." : "Build Learning Roadmap"}
                       </Button>
-                      <Button type="button" variant="outline" onClick={handleLoadInsights} disabled={processLoading.insights}>
+                      <Button type="button" size="sm" variant="outline" className="text-[11px] h-8" onClick={handleLoadInsights} disabled={processLoading.insights}>
                         {processLoading.insights ? "Loading..." : "Generate AI Insights"}
                       </Button>
                     </div>
@@ -517,8 +543,8 @@ export default function Match() {
               {/* Row 2: Matched / Missing / Related */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="shadow-sm">
-                  <CardHeader><CardTitle>Matched Skills</CardTitle></CardHeader>
-                  <CardContent className="text-slate-600 space-y-2 text-sm max-h-64 overflow-auto">
+                  <CardHeader className="py-3"><CardTitle className="text-base">Matched Skills</CardTitle></CardHeader>
+                  <CardContent className="text-slate-600 space-y-2 text-[13px] max-h-48 overflow-auto pb-4">
                     {matchedSkills.length > 0 ? (
                       matchedSkills.map((item, index) => (
                         <div key={`${item}-${index}`} className="flex items-start gap-2">
@@ -532,8 +558,8 @@ export default function Match() {
                 </Card>
 
                 <Card className="shadow-sm">
-                  <CardHeader><CardTitle>Missing Skills</CardTitle></CardHeader>
-                  <CardContent className="text-slate-600 space-y-2 text-sm max-h-64 overflow-auto">
+                  <CardHeader className="py-3"><CardTitle className="text-base">Missing Skills</CardTitle></CardHeader>
+                  <CardContent className="text-slate-600 space-y-2 text-[13px] max-h-48 overflow-auto pb-4">
                     {missingSkills.length > 0 ? (
                       missingSkills.map((item, index) => (
                         <div key={`${item}-${index}`} className="flex items-start gap-2">
@@ -547,8 +573,8 @@ export default function Match() {
                 </Card>
 
                 <Card className="shadow-sm">
-                  <CardHeader><CardTitle>Related Skills</CardTitle></CardHeader>
-                  <CardContent className="text-slate-600 space-y-2 text-sm max-h-64 overflow-auto">
+                  <CardHeader className="py-3"><CardTitle className="text-base">Related Skills</CardTitle></CardHeader>
+                  <CardContent className="text-slate-600 space-y-2 text-[13px] max-h-48 overflow-auto pb-4">
                     {relatedSkills.length > 0 ? (
                       relatedSkills.map((item, index) => (
                         <div key={`${item}-${index}`} className="flex items-start gap-2">
@@ -570,10 +596,10 @@ export default function Match() {
               {/* Row 3: Suggestions + Learning Plan */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card className="border-blue-200 bg-blue-50/50 flex flex-col justify-between shadow-md">
-                  <CardHeader>
-                    <CardTitle className="text-[#2369EB]">Improvement Suggestions</CardTitle>
+                  <CardHeader className="py-3">
+                    <CardTitle className="text-base text-[#2369EB]">Improvement Suggestions</CardTitle>
                   </CardHeader>
-                  <CardContent className="flex flex-col gap-4 text-slate-700 text-sm leading-relaxed">
+                  <CardContent className="flex flex-col gap-3 text-slate-700 text-[13px] leading-relaxed pb-4">
                     {ragSummary && (
                       <p className="text-xs text-blue-700 bg-blue-100/70 border border-blue-200 rounded-md p-2">
                         {ragSummary}
@@ -604,8 +630,9 @@ export default function Match() {
 
                     <Button
                       type="button"
+                      size="sm"
                       onClick={handleApplyToEditor}
-                      className="mt-2 bg-[#2369EB] hover:bg-blue-700 text-white w-full shadow-md"
+                      className="mt-2 bg-[#2369EB] hover:bg-blue-700 text-white w-full shadow-md h-9 text-xs"
                       disabled={!resume.trim()}
                     >
                       Apply Suggestions to Editor →
@@ -613,8 +640,9 @@ export default function Match() {
 
                     <Button
                       type="button"
+                      size="sm"
                       onClick={() => navigate("/restructure", { state: { resume } })}
-                      className="mt-2 bg-indigo-600 hover:bg-indigo-700 text-white w-full shadow-md"
+                      className="mt-2 bg-indigo-600 hover:bg-indigo-700 text-white w-full shadow-md h-9 text-xs"
                       disabled={!resume.trim()}
                     >
                       Structure Resume (ATS) →
@@ -634,10 +662,10 @@ export default function Match() {
                 </Card>
 
                 <Card className="border-emerald-200 bg-emerald-50/40 shadow-md">
-                  <CardHeader>
-                    <CardTitle className="text-emerald-700">Learning Roadmap</CardTitle>
+                  <CardHeader className="py-3">
+                    <CardTitle className="text-base text-emerald-700">Learning Roadmap</CardTitle>
                   </CardHeader>
-                  <CardContent className="text-slate-700 text-sm leading-relaxed space-y-3">
+                  <CardContent className="text-slate-700 text-[13px] leading-relaxed space-y-2 pb-4">
                     {learningPlan.length > 0 ? (
                       learningPlan.slice(0, 6).map((item, index) => (
                         <div key={`${item}-${index}`} className="flex items-start gap-2">
@@ -667,20 +695,20 @@ export default function Match() {
               {/* Dynamic Details Panel */}
               {(mode === "cover-letter" || mode === "cold-mail") && (
                 <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm animate-[fadeInDown_0.4s_ease-out]">
-                  <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
-                    {mode === "cover-letter" ? <PenTool size={16} className="text-[#2369EB]" /> : <Mail size={16} className="text-[#2369EB]" />}
-                    <h3 className="text-[12px] font-bold text-slate-700 tracking-widest uppercase">{mode === "cover-letter" ? "Cover Letter Context" : "Cold Mail Context"}</h3>
+                  <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
+                    {mode === "cover-letter" ? <PenTool size={14} className="text-[#2369EB]" /> : <Mail size={14} className="text-[#2369EB]" />}
+                    <h3 className="text-[11px] font-bold text-slate-700 tracking-widest uppercase">{mode === "cover-letter" ? "Cover Letter Context" : "Cold Mail Context"}</h3>
                   </div>
-                  <div className="p-6 space-y-5">
+                  <div className="p-5 space-y-4">
                     {mode === "cold-mail" && (
                       <div className="animate-[fadeInUp_0.4s_ease-out_forwards]">
-                        <label className="block text-[12px] font-bold text-slate-500 mb-2">Recipient Target</label>
+                        <label className="block text-[11px] font-bold text-slate-500 mb-1.5">Recipient Target</label>
                         <div className="flex flex-wrap gap-2">
                           {['Recruiter', 'Hiring Manager', 'Founder'].map(type => (
                             <button
                               key={type}
                               onClick={() => setRecipientType(type)}
-                              className={`px-4 py-2 rounded-lg text-[12px] font-bold transition-all duration-200 border ${recipientType === type ? 'bg-[#2369EB]/10 border-[#2369EB] text-[#2369EB]' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}
+                              className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 border ${recipientType === type ? 'bg-[#2369EB]/10 border-[#2369EB] text-[#2369EB]' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}
                             >
                               {type}
                             </button>
@@ -711,7 +739,7 @@ export default function Match() {
                         <button
                           onClick={handleDetectTone}
                           disabled={processLoading.tone || !job.trim()}
-                          className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-bold text-slate-600 hover:text-[#2369EB] hover:border-[#2369EB]/30 transition-colors disabled:opacity-50"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[12px] font-bold text-slate-600 hover:text-[#2369EB] hover:border-[#2369EB]/30 transition-colors disabled:opacity-50"
                         >
                           {processLoading.tone ? "Detecting Tone..." : "Detect Job Tone"}
                         </button>
@@ -727,7 +755,7 @@ export default function Match() {
                       <button
                         onClick={handleGenerateDraft}
                         disabled={!role || !company}
-                        className="w-full bg-[#2369EB] text-white px-4 py-3 rounded-xl text-[14px] font-bold shadow-[0_4px_14px_rgba(35,105,235,0.25)] hover:shadow-[0_6px_20px_rgba(35,105,235,0.4)] hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                        className="w-full bg-[#2369EB] text-white px-4 py-2.5 rounded-lg text-sm font-bold shadow-[0_4px_14px_rgba(35,105,235,0.25)] hover:shadow-[0_6px_20px_rgba(35,105,235,0.4)] hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                       >
                         {mode === "cold-mail" ? "Generate Cold Mail" : "Generate AI Draft"} →
                       </button>
@@ -740,7 +768,7 @@ export default function Match() {
               <div className="bg-white rounded-2xl border border-slate-200 flex flex-col flex-1 shadow-sm overflow-hidden animate-[fadeInUp_0.6s_ease-out]">
                 <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
                   <h3 className="text-[12px] font-bold text-slate-700 tracking-widest uppercase flex items-center gap-2">
-                    <UserCircle size={16} className="text-[#2369EB]" /> Base Resume
+                    <UserCircle size={14} className="text-[#2369EB]" /> Base Resume
                   </h3>
                   <div className="flex gap-2">
                     <button
@@ -764,12 +792,12 @@ export default function Match() {
                     </button>
                   </div>
                 </div>
-                <div className="p-6 flex-1 min-h-[250px]">
+                <div className="p-5 flex-1 min-h-[200px]">
                   {resumeLoadError && (
-                    <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded mb-4">{resumeLoadError}</p>
+                    <p className="text-[11px] text-amber-600 bg-amber-50 p-2 rounded mb-3">{resumeLoadError}</p>
                   )}
                   <textarea
-                    className="w-full h-full bg-slate-50 rounded-xl p-5 border border-slate-100 resize-none outline-none focus:bg-white focus:border-[#2369EB]/50 focus:ring-4 focus:ring-[#2369EB]/10 transition-all text-[14px] text-slate-700 placeholder:text-slate-400 leading-relaxed"
+                    className="w-full h-full bg-slate-50 rounded-xl p-4 border border-slate-100 resize-none outline-none focus:bg-white focus:border-[#2369EB]/50 focus:ring-4 focus:ring-[#2369EB]/10 transition-all text-[13px] text-slate-700 placeholder:text-slate-400 leading-relaxed"
                     placeholder="Paste your source resume content here..."
                     value={resume}
                     onChange={(e) => setResume(e.target.value)}
@@ -781,14 +809,14 @@ export default function Match() {
 
             {/* Job Description Panel */}
             <div className="bg-white rounded-2xl border border-slate-200 flex flex-col flex-1 shadow-sm overflow-hidden animate-[fadeInUp_0.7s_ease-out]">
-              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
-                <h3 className="text-[12px] font-bold text-slate-700 tracking-widest uppercase flex items-center gap-2">
-                  <Target size={16} className="text-emerald-500" /> Job Description
+              <div className="px-5 py-3 border-b border-slate-100 bg-slate-50">
+                <h3 className="text-[11px] font-bold text-slate-700 tracking-widest uppercase flex items-center gap-2">
+                  <Target size={14} className="text-emerald-500" /> Job Description
                 </h3>
               </div>
-              <div className="p-6 flex-1 min-h-[400px]">
+              <div className="p-5 flex-1 min-h-[350px]">
                 <textarea
-                  className="w-full h-full bg-slate-50 rounded-xl p-5 border border-slate-100 resize-none outline-none focus:bg-white focus:border-[#2369EB]/50 focus:ring-4 focus:ring-[#2369EB]/10 transition-all text-[14px] text-slate-700 placeholder:text-slate-400 leading-relaxed"
+                  className="w-full h-full bg-slate-50 rounded-xl p-4 border border-slate-100 resize-none outline-none focus:bg-white focus:border-[#2369EB]/50 focus:ring-4 focus:ring-[#2369EB]/10 transition-all text-[13px] text-slate-700 placeholder:text-slate-400 leading-relaxed"
                   placeholder="Paste the target job description here..."
                   value={job}
                   onChange={(e) => setJob(e.target.value)}

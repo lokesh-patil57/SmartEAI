@@ -33,9 +33,9 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-main px-4">
-      <div className="bg-white p-8 rounded-2xl shadow-lg border border-slate-200 w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-slate-900 mb-2">Login</h1>
-        <p className="text-slate-600 text-sm mb-6">
+      <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200 w-full max-w-sm">
+        <h1 className="text-xl font-black text-slate-900 mb-1">Login</h1>
+        <p className="text-slate-600 text-[13px] mb-4">
           Sign in to access your resumes and documents.
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -45,7 +45,7 @@ export default function Login() {
             </p>
           )}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider">
               Email
             </label>
             <Input
@@ -54,11 +54,11 @@ export default function Login() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
-              className="w-full"
+              className="w-full text-[13px] h-9"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider">
               Password
             </label>
             <Input
@@ -67,13 +67,13 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
-              className="w-full"
+              className="w-full text-[13px] h-9"
             />
           </div>
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#2369EB] hover:bg-[#1a5fd4] text-white"
+            className="w-full bg-[#2369EB] hover:bg-[#1a5fd4] text-white h-9 text-xs"
           >
             {loading ? "Signing in…" : "Sign in"}
           </Button>
