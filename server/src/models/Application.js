@@ -40,6 +40,9 @@ const applicationSchema = new mongoose.Schema(
     location: { type: String, default: '', trim: true },
     jobDescription: { type: String, default: '' },
 
+    // Target role (user-defined grouping key, e.g. "Frontend Engineer")
+    targetRole: { type: String, default: '', trim: true },
+
     // Skill analysis
     requiredSkills: [{ type: String }],
     matchedSkills: [{ type: String }],
