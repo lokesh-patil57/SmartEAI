@@ -57,7 +57,7 @@ function buildBaseResponse(result) {
 
 export async function postMatch(req, res, next) {
   try {
-    const { resume, job } = req.body;
+    const { resume, job, targetRole = '' } = req.body;
     const result = await matchResumeToJob(resume, job, { includeSemantic: false, includeLearningPlan: false });
     const base = buildBaseResponse(result);
     let applicationId = null;
@@ -75,6 +75,7 @@ export async function postMatch(req, res, next) {
           matchedSkills: result.matchedSkills || [],
           missingSkills: result.missingSkills || [],
           matchScore: result.score || 0,
+          targetRole: targetRole.trim(),
           timeline: [{ action: 'ATS Analysis', timestamp: new Date() }],
         });
         applicationId = application?._id?.toString() || null;

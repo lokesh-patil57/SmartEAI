@@ -30,6 +30,7 @@ export async function createApplication(req, res, next) {
       matchedSkills = [],
       missingSkills = [],
       matchScore = 0,
+      targetRole = '',
     } = req.body;
 
     const app = await Application.create({
@@ -44,6 +45,7 @@ export async function createApplication(req, res, next) {
       matchedSkills,
       missingSkills,
       matchScore,
+      targetRole,
       timeline: [{ action: 'ATS Analysis', timestamp: new Date() }],
     });
 
@@ -62,13 +64,16 @@ export async function getUserApplications(req, res, next) {
     const limit = Math.min(50, parseInt(req.query.limit) || 12);
     const skip = (page - 1) * limit;
 
+    const filter = { userId };
+    if (req.query.targetRole) filter.targetRole = req.query.targetRole;
+
     const [applications, total] = await Promise.all([
-      Application.find({ userId })
+      Application.find(filter)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .select('-jobDescription -__v'),
-      Application.countDocuments({ userId }),
+      Application.countDocuments(filter),
     ]);
 
     res.json({
@@ -80,6 +85,55 @@ export async function getUserApplications(req, res, next) {
         pages: Math.ceil(total / limit),
       },
     });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ─── GET /api/application/by-role ─────────────────────────────────────────────
+// Returns applications grouped by targetRole with aggregate stats.
+
+export async function getApplicationsByRole(req, res, next) {
+  try {
+    const userId = req.user._id;
+
+    // Fetch all (no pagination needed for role grouping – capped at 200)
+    const applications = await Application.find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(200)
+      .select('-jobDescription -__v')
+      .lean();
+
+    // Group by targetRole (empty targetRole becomes "General")
+    const groups = {};
+    for (const app of applications) {
+      const key = app.targetRole?.trim() || 'General';
+      if (!groups[key]) {
+        groups[key] = {
+          targetRole: key,
+          applications: [],
+          totalScore: 0,
+          assetCounts: { resume: 0, coverLetter: 0, coldMail: 0 },
+        };
+      }
+      groups[key].applications.push(app);
+      groups[key].totalScore += app.matchScore || 0;
+      if (app.assets?.resumeId) groups[key].assetCounts.resume += 1;
+      if (app.assets?.coverLetterId) groups[key].assetCounts.coverLetter += 1;
+      if (app.assets?.coldMailId) groups[key].assetCounts.coldMail += 1;
+    }
+
+    const roles = Object.values(groups).map((g) => ({
+      targetRole: g.targetRole,
+      count: g.applications.length,
+      averageScore: g.applications.length > 0 ? Math.round(g.totalScore / g.applications.length) : 0,
+      assetCounts: g.assetCounts,
+      latestStatus: g.applications[0]?.status || 'analyzed',
+      latestDate: g.applications[0]?.createdAt || null,
+      applications: g.applications,
+    }));
+
+    res.json({ roles });
   } catch (err) {
     next(err);
   }
