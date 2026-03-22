@@ -105,6 +105,11 @@ export default function Match() {
   const [resumeLoadError, setResumeLoadError] = useState(null);
   const [toast, setToast] = useState(null);
   const [processLoading, setProcessLoading] = useState({ related: false, roadmap: false, insights: false, tone: false });
+  // targetRole: user's intended role label used to group applications
+  const [targetRole, setTargetRole] = useState("");
+  const [showTargetRolePrompt, setShowTargetRolePrompt] = useState(false);
+  const [targetRoleInput, setTargetRoleInput] = useState("");
+  const [pendingAnalysisPayload, setPendingAnalysisPayload] = useState(null);
   const fileInputRef = useRef(null);
   const { isLoggedIn } = useAuth();
 
@@ -208,13 +213,14 @@ export default function Match() {
     }
   };
 
-  const handleAnalyze = async () => {
+  const handleAnalyze = async (overrideTargetRole) => {
     setLoading(true);
     setTone(null);
+    const tRole = overrideTargetRole !== undefined ? overrideTargetRole : targetRole;
     try {
       const analyzeRes = await api("/api/match", {
         method: "POST",
-        body: JSON.stringify({ resume, job }),
+        body: JSON.stringify({ resume, job, targetRole: tRole }),
       });
       const data = await analyzeRes.json();
       if (!analyzeRes.ok) throw new Error(data.error || "Analysis failed");
@@ -229,6 +235,30 @@ export default function Match() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Called when user clicks "Analyze Match" — if no targetRole set yet, show prompt first
+  const handleAnalyzeClick = () => {
+    if (!resume.trim() || !job.trim() || loading) return;
+    if (!targetRole && isLoggedIn) {
+      // Show the prompt; analysis will run after the user confirms
+      setTargetRoleInput("");
+      setShowTargetRolePrompt(true);
+    } else {
+      handleAnalyze();
+    }
+  };
+
+  const handleTargetRoleConfirm = () => {
+    const val = targetRoleInput.trim();
+    setTargetRole(val);
+    setShowTargetRolePrompt(false);
+    handleAnalyze(val);
+  };
+
+  const handleTargetRoleSkip = () => {
+    setShowTargetRolePrompt(false);
+    handleAnalyze("");
   };
 
   const createTrackedDocument = async ({ title, type, content }) => {
@@ -401,20 +431,34 @@ export default function Match() {
                 <p className="text-slate-400 mt-4 text-xl font-medium max-w-3xl">Design, build, and optimize your application materials with AI.</p>
               </div>
 
-              <div className="flex gap-3">
-                <button
-                  disabled={!resume.trim() || !job.trim() || loading}
-                  onClick={handleAnalyze}
-                  className="bg-[#2369EB] text-white px-8 py-3 rounded-xl text-[14px] font-bold shadow-[0_4px_14px_rgba(35,105,235,0.25)] hover:shadow-[0_6px_20px_rgba(35,105,235,0.4)] hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-                >
-                  {loading ? "Analyzing..." : "Analyze Match"}
-                </button>
-                <button
-                  onClick={() => { setJob(""); setResult(null); }}
-                  className="bg-white border border-slate-200 px-8 py-3 rounded-xl text-[14px] font-semibold text-slate-700 hover:border-[#2369EB] transition-all"
-                >
-                  Start with new job description
-                </button>
+              <div className="flex flex-col gap-3">
+                {/* Target role indicator (visible once set) */}
+                {targetRole && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-[#2369EB]/8 border border-[#2369EB]/20 rounded-xl text-[13px]">
+                    <Briefcase size={13} className="text-[#2369EB]" />
+                    <span className="text-slate-600 font-medium">Target Role:</span>
+                    <span className="font-bold text-[#2369EB]">{targetRole}</span>
+                    <button
+                      onClick={() => setTargetRole("")}
+                      className="ml-auto text-slate-400 hover:text-slate-600 text-xs underline"
+                    >change</button>
+                  </div>
+                )}
+                <div className="flex gap-3">
+                  <button
+                    disabled={!resume.trim() || !job.trim() || loading}
+                    onClick={handleAnalyzeClick}
+                    className="bg-[#2369EB] text-white px-8 py-3 rounded-xl text-[14px] font-bold shadow-[0_4px_14px_rgba(35,105,235,0.25)] hover:shadow-[0_6px_20px_rgba(35,105,235,0.4)] hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                  >
+                    {loading ? "Analyzing..." : "Analyze Match"}
+                  </button>
+                  <button
+                    onClick={() => { setJob(""); setResult(null); setTargetRole(""); }}
+                    className="bg-white border border-slate-200 px-8 py-3 rounded-xl text-[14px] font-semibold text-slate-700 hover:border-[#2369EB] transition-all"
+                  >
+                    Start with new job description
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -539,7 +583,7 @@ export default function Match() {
                       {suggestions.length > 0 ? (
                         suggestions.slice(0, 6).map((item, index) => (
                           <div key={`${item}-${index}`} className="flex items-start gap-2">
-                            <span className="text-blue-500 font-bold">•</span><span>{item}</span>
+                            <span className="text-blue-500 font-bold">•</span><span>{typeof item === 'object' ? item.action || item.suggestion || JSON.stringify(item) : item}</span>
                           </div>
                         ))
                       ) : (
@@ -581,7 +625,7 @@ export default function Match() {
                         <p className="text-xs font-semibold text-blue-700 mb-2">Quick Wins</p>
                         <div className="space-y-1">
                           {ragQuickWins.slice(0, 3).map((item, index) => (
-                            <p key={`${item}-${index}`} className="text-xs text-slate-600">• {item}</p>
+                            <p key={`${item}-${index}`} className="text-xs text-slate-600">• {typeof item === 'object' ? item.action || item.quickWin || JSON.stringify(item) : item}</p>
                           ))}
                         </div>
                       </div>
@@ -755,6 +799,47 @@ export default function Match() {
           </div>
 
           {toast && <Toast {...toast} onClose={() => setToast(null)} />}
+
+          {/* ── Target Role Prompt Modal ── */}
+          {showTargetRolePrompt && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]">
+              <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md mx-4 animate-[fadeInUp_0.3s_ease-out]">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-xl bg-[#2369EB]/10 flex items-center justify-center">
+                    <Target size={20} className="text-[#2369EB]" />
+                  </div>
+                  <h3 className="text-xl font-black text-slate-900">Set Your Target Role</h3>
+                </div>
+                <p className="text-slate-500 text-sm mb-6 leading-relaxed">
+                  Give this job search a name (e.g. <em>"Frontend Engineer"</em>). All applications with the same target role will be grouped into one card in your Applications tracker.
+                </p>
+                <input
+                  autoFocus
+                  type="text"
+                  value={targetRoleInput}
+                  onChange={(e) => setTargetRoleInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleTargetRoleConfirm(); if (e.key === 'Escape') handleTargetRoleSkip(); }}
+                  placeholder="e.g. Frontend Engineer, Data Analyst…"
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 outline-none focus:border-[#2369EB] focus:ring-4 focus:ring-[#2369EB]/10 transition-all mb-4"
+                />
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleTargetRoleConfirm}
+                    disabled={!targetRoleInput.trim()}
+                    className="flex-1 bg-[#2369EB] text-white py-3 rounded-xl font-bold text-sm hover:bg-[#1c55c0] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Confirm & Analyze
+                  </button>
+                  <button
+                    onClick={handleTargetRoleSkip}
+                    className="px-6 py-3 rounded-xl border border-slate-200 text-slate-500 font-semibold text-sm hover:border-slate-300 transition-all"
+                  >
+                    Skip
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
         </div>
       </main>
