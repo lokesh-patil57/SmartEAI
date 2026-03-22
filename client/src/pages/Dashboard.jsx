@@ -329,7 +329,7 @@ export default function Dashboard() {
                       latestAnalysis.missingSkills.slice(0, 5).map((skill, index) => (
                         <div key={`${skill}-${index}`} className="flex items-center gap-1.5 text-xs text-slate-600">
                           <span className="text-red-400">✕</span>
-                          <span>{skill}</span>
+                          <span>{typeof skill === 'object' ? JSON.stringify(skill) : skill}</span>
                         </div>
                       ))
                     ) : (
@@ -350,7 +350,7 @@ export default function Dashboard() {
                       latestAnalysis.learningPlan.slice(0, 3).map((item, index) => (
                         <div key={`${item}-${index}`} className="flex items-start gap-1.5 text-xs text-slate-600">
                           <span className="text-emerald-600 font-bold mt-0.5">•</span>
-                          <span className="leading-snug">{item}</span>
+                          <span className="leading-snug">{typeof item === 'object' ? item.action || JSON.stringify(item) : item}</span>
                         </div>
                       ))
                     ) : (
