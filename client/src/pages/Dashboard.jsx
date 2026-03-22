@@ -61,7 +61,7 @@ const GlassCard = ({ card, idx, isHovered, onHover, onLeave, onClick }) => {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
-      className={`group relative rounded-3xl p-6 md:p-8 cursor-pointer overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]
+      className={`group relative rounded-2xl p-4 md:p-5 cursor-pointer overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]
         animate-[staggerUp_0.8s_cubic-bezier(0.16,1,0.3,1)_forwards] opacity-0
         bg-white border shadow-sm
         ${isHovered ? `border-[#2369EB]/40 shadow-lg ${theme.shadow}` : 'border-slate-200'}
@@ -86,13 +86,13 @@ const GlassCard = ({ card, idx, isHovered, onHover, onLeave, onClick }) => {
 
       <div className="relative z-10 flex flex-col h-full min-h-[160px]">
         {/* Header (Icon + Title) */}
-        <div className="flex items-center gap-4 mb-5">
-          <div className={`w-12 h-12 rounded-[0.9rem] flex items-center justify-center transition-colors duration-300 border
+        <div className="flex items-center gap-4 mb-3">
+          <div className={`w-8 h-8 rounded-[0.6rem] flex items-center justify-center transition-colors duration-300 border
             ${isHovered ? `${theme.bg} text-white border-transparent` : `bg-white ${theme.text} border-slate-200`}
           `}>
-            <card.icon size={22} className="stroke-[2]" />
+            <card.icon size={16} className="stroke-[2]" />
           </div>
-          <h3 className={`text-xl font-bold tracking-tight transition-colors duration-300
+          <h3 className={`text-base font-bold tracking-tight transition-colors duration-300
             ${isHovered ? theme.text : 'text-slate-800'}
           `}>
             {card.title}
@@ -100,17 +100,17 @@ const GlassCard = ({ card, idx, isHovered, onHover, onLeave, onClick }) => {
         </div>
 
         {/* Description */}
-        <p className="text-slate-500 text-base leading-relaxed flex-grow font-medium transition-transform duration-500">
+        <p className="text-slate-500 text-[13px] leading-relaxed flex-grow font-medium transition-transform duration-500">
           {card.desc}
         </p>
 
         {/* Animated Arrow Button */}
-        <div className={`mt-6 inline-flex items-center justify-between w-full p-3 rounded-xl transition-all duration-500
-          ${isHovered ? `${theme.bgSubtle} shadow-sm translate-y-0 opacity-100` : 'bg-transparent translate-y-4 opacity-0'}
+        <div className={`mt-3 inline-flex items-center justify-between w-full p-2 rounded-xl transition-all duration-500
+          ${isHovered ? `${theme.bgSubtle} shadow-sm translate-y-0 opacity-100` : 'bg-transparent translate-y-2 opacity-0'}
         `}>
-          <span className={`font-bold text-sm ${theme.text}`}>Launch Tool</span>
-          <div className={`w-7 h-7 rounded-full bg-white flex items-center justify-center ${theme.text} transition-transform duration-500 group-hover:translate-x-1 shadow-sm`}>
-            <ArrowRight size={14} className="stroke-[3]" />
+          <span className={`font-bold text-[10px] uppercase tracking-wider ${theme.text}`}>Launch Tool</span>
+          <div className={`w-5 h-5 rounded-full bg-white flex items-center justify-center ${theme.text} transition-transform duration-500 group-hover:translate-x-1 shadow-sm`}>
+            <ArrowRight size={10} className="stroke-[3]" />
           </div>
         </div>
       </div>
@@ -207,28 +207,28 @@ export default function Dashboard() {
   };
 
   return (
-    <main className="flex-1 w-full pt-24 lg:pt-32 pb-20 px-6 lg:px-20 relative z-10 overflow-hidden bg-[#F8FAFC] selection:bg-[#2369EB]/20 selection:text-[#2369EB]">
+    <main className="flex-1 w-full pt-16 lg:pt-24 pb-12 px-6 lg:px-20 relative z-10 overflow-hidden bg-[#F8FAFC] selection:bg-[#2369EB]/20 selection:text-[#2369EB]">
       {/* Removed mesh overlays for pure white background */}
-      <div className="max-w-6xl mx-auto space-y-10 relative z-10">
+      <div className="max-w-6xl mx-auto space-y-6 relative z-10">
 
         {/* Modern Header Layout */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 animate-[fadeInDown_0.6s_ease-out]">
           <div className="space-y-6">
             <button
               onClick={() => navigate('/')}
-              className="group inline-flex items-center gap-2 text-slate-500 hover:text-[#2369EB] transition-colors text-sm font-semibold tracking-wide uppercase"
+              className="group inline-flex items-center gap-2 text-slate-500 hover:text-[#2369EB] transition-colors text-[13px] font-semibold tracking-wide uppercase"
             >
-              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm border border-slate-200 group-hover:border-[#2369EB]/30 group-hover:scale-110 transition-all">
-                <ChevronLeft size={16} />
+              <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-sm border border-slate-200 group-hover:border-[#2369EB]/30 group-hover:scale-110 transition-all">
+                <ChevronLeft size={14} />
               </div>
               Return Home
             </button>
 
             <div>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight mb-4">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight mb-2">
                 Workspace
               </h2>
-              <p className="text-slate-500 text-xl font-medium max-w-2xl">
+              <p className="text-slate-500 text-base font-medium max-w-2xl">
                 Design, build, and optimize your application materials with AI.
               </p>
             </div>
@@ -249,7 +249,7 @@ export default function Dashboard() {
                   key={tab}
                   ref={(el) => (tabsRef.current[idx] = el)}
                   onClick={() => setActiveTab(tab)}
-                  className={`relative z-10 px-8 py-3 font-bold text-sm transition-colors duration-300 rounded-full
+                  className={`relative z-10 px-5 py-2 font-bold text-xs transition-colors duration-300 rounded-full
                     ${isActive ? 'text-[#2369EB]' : 'text-slate-500 hover:text-slate-800'}
                   `}
                 >
@@ -264,13 +264,13 @@ export default function Dashboard() {
         {isLoggedIn && (
           <div className="animate-[fadeInDown_0.7s_ease-out]">
             <div className="flex items-center justify-between mb-4 px-2">
-              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                <Brain size={22} className="text-[#2369EB]" />
+              <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                <Brain size={18} className="text-[#2369EB]" />
                 Skill Gap Analysis
               </h2>
               <button
                 onClick={() => navigate("/match")}
-                className="px-5 py-2 text-sm font-semibold text-[#2369EB] bg-white border border-[#2369EB]/20 rounded-xl hover:bg-[#2369EB]/5 hover:border-[#2369EB]/40 transition-all shadow-sm"
+                className="px-3 py-1 text-[11px] font-semibold text-[#2369EB] bg-white border border-[#2369EB]/20 rounded-xl hover:bg-[#2369EB]/5 hover:border-[#2369EB]/40 transition-all shadow-sm"
               >
                 Run New Analysis
               </button>
@@ -283,10 +283,10 @@ export default function Dashboard() {
             {!historyLoading && !latestAnalysis && (
               <div
                 onClick={() => navigate("/match")}
-                className="w-full border border-dashed border-[#2369EB]/40 bg-white/40 backdrop-blur-xl rounded-[2rem] p-12 flex flex-col items-center justify-center text-center transition-all duration-300 hover:bg-white/70 cursor-pointer"
+                className="w-full border border-dashed border-[#2369EB]/40 bg-white/40 backdrop-blur-xl rounded-[2rem] p-10 flex flex-col items-center justify-center text-center transition-all duration-300 hover:bg-white/70 cursor-pointer"
               >
-                <Target size={36} className="text-[#2369EB] mb-4 stroke-[1.5]" />
-                <h3 className="text-lg font-bold text-slate-800 mb-1">No analysis yet</h3>
+                <Target size={30} className="text-[#2369EB] mb-3 stroke-[1.5]" />
+                <h3 className="text-base font-bold text-slate-800 mb-1">No analysis yet</h3>
                 <p className="text-slate-500 text-sm font-medium">
                   Click Analyze Match to see your skill gap report here.
                 </p>
@@ -296,9 +296,9 @@ export default function Dashboard() {
             {!historyLoading && latestAnalysis && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Latest Score */}
-                <div className="p-6 rounded-2xl bg-white border border-blue-100 shadow-md">
+                <div className="p-5 rounded-2xl bg-white border border-blue-100 shadow-md">
                   <div className="pb-2">
-                    <h4 className="text-sm text-slate-500 font-medium">Latest Match</h4>
+                    <h4 className="text-xs text-slate-500 font-medium">Latest Match</h4>
                   </div>
                   <div className="space-y-3">
                     <MiniScoreBar score={latestAnalysis.matchScore} />
@@ -318,10 +318,10 @@ export default function Dashboard() {
                 </div>
 
                 {/* Missing Skills */}
-                <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm">
                   <div className="pb-2">
-                    <h4 className="text-sm text-slate-500 font-medium flex items-center gap-1.5">
-                      <Target size={14} className="text-red-400" /> Missing Skills
+                    <h4 className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+                      <Target size={12} className="text-red-400" /> Missing Skills
                     </h4>
                   </div>
                   <div className="space-y-1.5">
@@ -339,10 +339,10 @@ export default function Dashboard() {
                 </div>
 
                 {/* Learning Path */}
-                <div className="p-6 rounded-2xl bg-white border border-emerald-100 bg-emerald-50/40 shadow-sm">
+                <div className="p-5 rounded-2xl bg-white border border-emerald-100 bg-emerald-50/40 shadow-sm">
                   <div className="pb-2">
-                    <h4 className="text-sm text-emerald-700 font-medium flex items-center gap-1.5">
-                      <BookOpen size={14} /> Learning Path
+                    <h4 className="text-xs text-emerald-700 font-medium flex items-center gap-1.5">
+                      <BookOpen size={12} /> Learning Path
                     </h4>
                   </div>
                   <div className="space-y-1.5">
@@ -365,7 +365,7 @@ export default function Dashboard() {
 
         {/* Action Cards Grid - Bento Layout Styling */}
         <div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-10"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6"
           key={activeTab} // Forces re-mount for animation
         >
           {getDashboardCards().map((card, idx) => (
