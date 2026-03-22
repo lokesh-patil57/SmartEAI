@@ -37,7 +37,7 @@ function SkillPill({ label, tone = "default" }) {
     default: "bg-white/5 text-foreground/90 border-white/10",
   }[tone];
 
-  return <span className={`px-2.5 py-1 rounded-full border text-xs ${toneClass}`}>{label}</span>;
+  return <span className={`px-2.5 py-1 rounded-full border text-xs ${toneClass}`}>{typeof label === 'object' ? JSON.stringify(label) : label}</span>;
 }
 
 function AssetItem({ icon: Icon, title, documentId, type, onOpen, onDownload }) {

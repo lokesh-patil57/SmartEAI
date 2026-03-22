@@ -18,6 +18,7 @@ import Profile from "./pages/Profile";
 import Restructure from "./pages/Restructure";
 
 const ApplicationDetails = lazy(() => import("./pages/ApplicationDetails"));
+const RoleApplications = lazy(() => import("./pages/RoleApplications"));
 
 import { ProtectedRoute, GuestRoute } from "./components/auth/ProtectedRoute";
 import { Analytics } from "@vercel/analytics/react";
@@ -160,6 +161,17 @@ export default function App() {
             <ProtectedRoute>
               <AppLayout>
                 <Applications />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/applications/role/:roleName"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <RoleApplications />
               </AppLayout>
             </ProtectedRoute>
           }

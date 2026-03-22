@@ -27,7 +27,7 @@ export default function ApplicationTimeline({ timeline = [] }) {
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                 <div>
-                  <p className="font-medium text-sm">{item.action}</p>
+                  <p className="font-medium text-sm">{typeof item.action === 'object' ? item.action.action || JSON.stringify(item.action) : item.action}</p>
                   {item.meta ? <p className="text-xs text-muted-foreground mt-0.5">{item.meta}</p> : null}
                 </div>
                 <div className="text-xs text-muted-foreground flex items-center gap-1 shrink-0">
