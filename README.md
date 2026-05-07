@@ -1,3 +1,10 @@
+# SmartEAI – AI-Powered Internship & Job Application Assistant
+
+SmartEAI is an AI-powered internship and job application assistant built using the MERN stack and Gemini AI. It helps users analyze resumes against job descriptions through ATS-aware matching and intelligently improves resumes, cover letters, and cold emails using ethical AI workflows. The platform provides a modern, user-controlled editing experience with secure authentication and multi-format document support.
+
+### 🚀 Check out - https://smart-eai.vercel.app
+
+
 <div >
   <br />
       <img src="client/public/SmrtEAI.avif" alt="Project Banner">
